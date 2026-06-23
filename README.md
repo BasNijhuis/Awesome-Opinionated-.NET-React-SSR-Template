@@ -221,7 +221,7 @@ values you'd otherwise hand-edit across 200+ files:
 | Analyzer prefix | `ACME` | the `ACME001…` domain-analyzer diagnostic ids |
 | Frontend folder / web resource | `acme-web` | the folder, `package.json`, Aspire resource, CI, Biome |
 | API resource | `acme-api` | the Aspire resource + SSR discovery var |
-| Database name | `acme` | `AddDatabase` + every `GetConnectionString` |
+| Database name (kebab; also the Aspire resource name) | `acme` | `AddDatabase` + every `GetConnectionString` |
 | Project title / license holder | — | README + `LICENSE` |
 
 It can also wipe/initialize git history (`--reinit-git`) and remove itself when done

@@ -56,7 +56,7 @@ if (flags.ContainsKey("help") || flags.ContainsKey("h"))
           --analyzer-prefix=<NAME>   Analyzer diagnostic-id prefix (e.g. CTSO -> CTSO001)
           --web=<name>               Frontend folder + pnpm + Aspire resource name (kebab)
           --api=<name>               Aspire API resource name (kebab)
-          --db=<name>                PostgreSQL database name (lowercase)
+          --db=<name>                Database name — also the Aspire resource name (kebab; no underscores)
           --db-password=<value>      Local-dev Postgres password (local only)
           --title=<text>            Project display title (README H1)
           --license-holder=<text>    Copyright holder for LICENSE
@@ -124,11 +124,6 @@ string? ValidateKebab(string v) =>
         ? null
         : "Use lowercase letters, digits and hyphens (e.g. contoso-web).";
 
-string? ValidateLower(string v) =>
-    Regex.IsMatch(v, "^[a-z][a-z0-9_]*$")
-        ? null
-        : "Use lowercase letters, digits and underscores (e.g. contoso).";
-
 var targetInput = Ask(
     "target",
     "Create the project in (absolute or relative path; empty = rename in place)",
@@ -156,7 +151,10 @@ var analyzerPrefix = Ask(
 
 var web = Ask("web", "Frontend folder / pnpm / web resource name", $"{kebab}-web", ValidateKebab);
 var api = Ask("api", "Aspire API resource name", $"{kebab}-api", ValidateKebab);
-var db = Ask("db", "PostgreSQL database name", kebab.Replace("-", "_"), ValidateLower);
+
+// The db name doubles as the Aspire resource name in AddDatabase(...), which only permits
+// ASCII letters, digits and hyphens (ASPIRE006) — so it must be kebab, never snake_case.
+var db = Ask("db", "Database / Aspire resource name (kebab)", kebab, ValidateKebab);
 var dbPassword = Ask(
     "db-password",
     "Local-dev Postgres password (local only)",
