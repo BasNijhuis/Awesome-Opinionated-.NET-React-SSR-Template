@@ -41,7 +41,7 @@ public sealed class EfEntityMustNotBeDomainTypeAnalyzer : DiagnosticAnalyzer
     private static readonly DiagnosticDescriptor Rule = new(
         id: DiagnosticId,
         title: "Domain types must not be mapped as EF entities",
-        messageFormat: "Domain type '{0}' must not be mapped as an EF entity; map an Application-layer persistence entity (e.g. '{0}Entity') instead",
+        messageFormat: "Domain type '{0}' must not be mapped as an EF entity; map an Application-layer persistence entity (such as '{0}Entity') instead",
         category: "Design",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,

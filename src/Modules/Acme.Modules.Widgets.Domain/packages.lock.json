@@ -5,6 +5,12 @@
       "acme.domainabstractions": {
         "type": "Project"
       },
+      "acme.kernel.domain": {
+        "type": "Project",
+        "dependencies": {
+          "Acme.DomainAbstractions": "[1.0.0, )"
+        }
+      },
       "acme.modules.widgets.domain.contracts": {
         "type": "Project"
       }

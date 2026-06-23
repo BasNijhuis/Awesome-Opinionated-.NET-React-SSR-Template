@@ -11,5 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Widgets.Domain\Acme.Modules.Widgets.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Widgets.Domain.Contracts\Acme.Modules.Widgets.Domain.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\src\Kernel\Acme.Kernel.Domain\Acme.Kernel.Domain.csproj" />
   </ItemGroup>
 </Project>

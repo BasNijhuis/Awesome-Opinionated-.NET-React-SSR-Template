@@ -15,6 +15,14 @@ public sealed record CreateWidgetResult
     public required WidgetDto Widget { get; init; }
 }
 
+public sealed record AdjustWidgetQuantityCommand : ICommand<WidgetDto>
+{
+    public required WidgetId Id { get; init; }
+
+    /// <summary>Signed change: positive adds stock, negative removes it.</summary>
+    public required int Delta { get; init; }
+}
+
 public sealed record GetWidgetQuery : IQuery<WidgetDto>
 {
     public required WidgetId Id { get; init; }

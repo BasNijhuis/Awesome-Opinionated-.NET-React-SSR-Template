@@ -8,6 +8,7 @@
     <ProjectReference Include="..\Acme.Modules.Greetings.Application.Contracts\Acme.Modules.Greetings.Application.Contracts.csproj" />
     <ProjectReference Include="..\Acme.Modules.Greetings.Domain\Acme.Modules.Greetings.Domain.csproj" />
     <ProjectReference Include="..\..\Kernel\Acme.Kernel.Application\Acme.Kernel.Application.csproj" />
+    <ProjectReference Include="..\..\Kernel\Acme.Kernel.Domain\Acme.Kernel.Domain.csproj" />
     <ProjectReference Include="..\..\Kernel\Acme.Kernel.Contracts\Acme.Kernel.Contracts.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Acme.CQRS.Abstractions\Acme.CQRS.Abstractions.csproj" />
   </ItemGroup>

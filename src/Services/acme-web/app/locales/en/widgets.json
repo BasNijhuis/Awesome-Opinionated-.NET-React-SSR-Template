@@ -10,6 +10,8 @@
   "list": {
     "empty": "No widgets yet — add the first one above.",
     "quantity": "Quantity: {{count}}",
-    "createdAt": "Added {{date}}"
+    "createdAt": "Added {{date}}",
+    "increment": "Add one to quantity",
+    "decrement": "Remove one from quantity"
   }
 }

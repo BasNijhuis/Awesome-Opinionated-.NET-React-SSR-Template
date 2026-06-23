@@ -76,6 +76,13 @@ export async function getWidget(id: string) {
   return unwrap(await api.getWidget({ ...base(), path: { id } }), zWidgetDto);
 }
 
+export async function adjustWidgetQuantity(id: string, delta: number) {
+  return unwrap(
+    await api.adjustWidgetQuantity({ ...base(), path: { id }, body: { delta } }),
+    zWidgetDto,
+  );
+}
+
 export async function listWidgets() {
   return unwrap(await api.listWidgets({ ...base() }), z.array(zWidgetDto));
 }

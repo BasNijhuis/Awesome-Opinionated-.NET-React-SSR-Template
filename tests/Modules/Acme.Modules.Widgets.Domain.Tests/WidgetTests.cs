@@ -1,3 +1,5 @@
+using Acme.DomainAbstractions;
+using Acme.Kernel.Domain.DomainEvents;
 using Acme.Modules.Widgets.Domain.Contracts;
 
 namespace Acme.Modules.Widgets.Domain.Tests;
@@ -41,6 +43,54 @@ public sealed class WidgetTests
         widget.Name.Should().Be(state.Name);
         widget.Quantity.Should().Be(state.Quantity);
         widget.CreatedAt.Should().Be(state.CreatedAt);
+    }
+
+    [Fact]
+    public void AdjustQuantity_returns_a_new_instance_and_leaves_the_original_unchanged()
+    {
+        // Arrange
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5));
+
+        // Act
+        var result = widget.AdjustQuantity(3);
+
+        // Assert — immutable transition: a new instance, the original untouched (#23)
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Quantity.Should().Be(8);
+        result.Value.Should().NotBeSameAs(widget);
+        widget.Quantity.Should().Be(5);
+    }
+
+    [Fact]
+    public void AdjustQuantity_raises_a_WidgetQuantityAdjusted_event_with_the_before_and_after()
+    {
+        // Arrange
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5));
+
+        // Act
+        var adjusted = widget.AdjustQuantity(-2).Value;
+
+        // Assert
+        var raised = adjusted.DomainEvents.OfType<WidgetQuantityAdjusted>().Single();
+        raised.WidgetId.Should().Be(adjusted.Id.Value);
+        raised.Name.Should().Be("Gadget");
+        raised.OldQuantity.Should().Be(5);
+        raised.NewQuantity.Should().Be(3);
+    }
+
+    [Fact]
+    public void AdjustQuantity_rejects_an_adjustment_that_would_go_negative()
+    {
+        // Arrange
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 1));
+
+        // Act
+        var result = widget.AdjustQuantity(-5);
+
+        // Assert — an expected, recoverable failure (Conflict), not an exception
+        result.IsFailure.Should().BeTrue();
+        result.Error.Category.Should().Be(ErrorCategory.Conflict);
+        result.Error.Code.Should().Be("widget_quantity_negative");
     }
 
     private sealed record WidgetState(
