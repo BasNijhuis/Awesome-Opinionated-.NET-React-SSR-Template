@@ -1,0 +1,201 @@
+name: CI
+
+# Build + test only (no deploy). Two independent tracks — backend and frontend — run in parallel;
+# within each track, build first then test. A track's tests depend only on its own build, so backend
+# tests never wait on the frontend build (and vice versa). E2E is a separate, slower job. Coverage is
+# published as a non-gating artifact (no thresholds). See issue #10.
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (build + test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      # Not --locked-mode: the Aspire AppHost pulls RID-specific packages (e.g.
+      # Aspire.Dashboard.Sdk.<rid>), so its lock file is platform-specific and locked-mode fails when
+      # CI's RID differs from where the lock was generated. The lock files still drive cache keys; the
+      # frontend's `pnpm install --frozen-lockfile` is the platform-safe lockfile gate.
+      - name: Restore
+        run: |
+          dotnet tool restore
+          dotnet restore Acme.slnx
+
+      # Build first. The Domain immutability analyzer (#23) is a build error (ACME*), so a violation
+      # fails here.
+      - name: Build
+        run: dotnet build Acme.slnx --no-restore
+
+      - name: Format check (CSharpier)
+        run: dotnet csharpier check .
+
+      # Test second. Architecture rules (NetArchTest) are run WITHOUT coverage: coverage
+      # instrumentation injects an assembly dependency that the "depends only on" / "is a leaf" rules
+      # reject. They contribute no production coverage anyway.
+      - name: Test — architecture rules (no coverage)
+        run: dotnet test --project tests/Acme.Architecture.Tests/Acme.Architecture.Tests.csproj --no-build
+
+      # Every other test project runs WITH coverage (Docker is available for Testcontainers). Each
+      # writes a cobertura report into its own bin/**/TestResults.
+      - name: Test — everything else (+ coverage)
+        run: |
+          set -euo pipefail
+          mapfile -t projects < <(grep -oE 'tests/[^"]+\.Tests\.csproj' Acme.slnx | grep -v 'Architecture\.Tests')
+          for project in "${projects[@]}"; do
+            echo "::group::test $project"
+            dotnet test --project "$project" --no-build -- \
+              --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+            echo "::endgroup::"
+          done
+
+      # Non-gating: coverage is published for inspection only — no thresholds, never fails the run.
+      - name: Upload backend coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: "**/TestResults/coverage.cobertura.xml"
+          if-no-files-found: warn
+
+  frontend:
+    name: Frontend (build + checks)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Services/acme-web
+    steps:
+      - uses: actions/checkout@v4
+
+      # The frontend build runs `api:generate`, which builds the API to emit the OpenAPI spec + client
+      # (#4) — so this track needs the .NET SDK too. It builds the API independently of the backend
+      # job, keeping the tracks decoupled.
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('src/Services/acme-web/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      # Build first (api:generate -> OpenAPI spec + client, then react-router build).
+      - name: Build
+        run: pnpm run build
+
+      # Checks second.
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint (Biome)
+        run: pnpm run lint
+
+      - name: Unit tests (+ coverage)
+        run: pnpm run test:coverage
+
+      - name: Upload frontend coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: src/Services/acme-web/coverage
+          if-no-files-found: warn
+
+  # E2E boots the full Aspire stack (Postgres + API + the production web server) and runs Playwright.
+  # Independent of the other tracks (its own job, no `needs`), it runs in parallel on every PR.
+  e2e:
+    name: E2E (Playwright via Aspire)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: src/Services/acme-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      # Aspire's startup preflight requires a *trusted* HTTPS dev cert; a fresh runner has none. On
+      # Linux `--trust` exits 4 (OS trust needs SSL_CERT_DIR) but still exports the cert to
+      # ~/.aspnet/dev-certs/trust — the Run E2E step points SSL_CERT_DIR there so Aspire trusts it.
+      - name: Create + trust HTTPS dev certificate
+        run: dotnet dev-certs https --trust || true
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('src/Services/acme-web/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('src/Services/acme-web/pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Boots the full Aspire stack (Docker is available on ubuntu-latest; the Aspire AppHost SDK is
+      # restored from NuGet — no workload install). SSL_CERT_DIR makes the exported dev cert trusted
+      # by OpenSSL (so Aspire's preflight passes) while keeping the system CA bundle.
+      - name: Run E2E
+        run: |
+          export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
+          pnpm run test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            src/Services/acme-web/playwright-report
+            src/Services/acme-web/test-results
+          if-no-files-found: ignore

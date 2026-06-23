@@ -1,0 +1,27 @@
+@ApiService_HostAddress = http://localhost:5352
+
+### Health/ping
+GET {{ApiService_HostAddress}}/api/ping
+Accept: application/json
+
+### Create a greeting
+POST {{ApiService_HostAddress}}/api/greetings
+Content-Type: application/json
+
+{ "message": "Hello, template!" }
+
+### List greetings
+GET {{ApiService_HostAddress}}/api/greetings
+Accept: application/json
+
+### Create a widget
+POST {{ApiService_HostAddress}}/api/widgets
+Content-Type: application/json
+
+{ "name": "Sprocket", "quantity": 3 }
+
+### List widgets
+GET {{ApiService_HostAddress}}/api/widgets
+Accept: application/json
+
+###

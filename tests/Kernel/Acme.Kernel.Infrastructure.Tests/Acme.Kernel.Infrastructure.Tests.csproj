@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\TestProjects.props" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Acme.Kernel.Infrastructure.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Acme.TestSupport\Acme.TestSupport.csproj" />
+    <ProjectReference Include="..\..\..\src\Kernel\Acme.Kernel.Infrastructure\Acme.Kernel.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Greetings.Infrastructure\Acme.Modules.Greetings.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Widgets.Infrastructure\Acme.Modules.Widgets.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

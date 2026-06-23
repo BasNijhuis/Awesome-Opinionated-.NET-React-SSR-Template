@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Acme AppHost",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/Aspire/Acme.AppHost/Acme.AppHost.csproj",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bLogin to the dashboard at\\s+(https://\\S+)"
+      }
+    },
+    {
+      "name": "Acme Api",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/Services/Acme.Api/Acme.Api.csproj"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Begroetingen",
+  "subtitle": "Elke begroeting wordt op de server via de API opgehaald en aangemaakt.",
+  "form": {
+    "messageLabel": "Bericht",
+    "messagePlaceholder": "Hallo, wereld",
+    "submit": "Begroeting toevoegen"
+  },
+  "list": {
+    "empty": "Nog geen begroetingen — voeg hierboven de eerste toe.",
+    "createdAt": "Toegevoegd op {{date}}"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "dotnet.defaultSolution": "Acme.slnx",
+  // Biome lives in the nested web project, not the repo root, so the extension can't auto-locate it.
+  // Point it at the native platform binary per `${process.platform}-${process.arch}` (paths relative
+  // to the workspace root). We target the native binary rather than `node_modules/.bin/biome`: that
+  // shim is a shell script that re-execs `node`, and the extension host's PATH often lacks node (e.g.
+  // under nvm when VS Code is launched from the Dock), which makes the shim fail to start. The native
+  // binary has no such dependency. NOTE: the path is version-pinned — bump `@2.5.0` whenever the
+  // `@biomejs/biome` dependency is upgraded (the pnpm store dir embeds the version).
+  "biome.lsp.bin": {
+    "darwin-arm64": "src/Services/acme-web/node_modules/.pnpm/@biomejs+cli-darwin-arm64@2.5.0/node_modules/@biomejs/cli-darwin-arm64/biome",
+    "darwin-x64": "src/Services/acme-web/node_modules/.pnpm/@biomejs+cli-darwin-x64@2.5.0/node_modules/@biomejs/cli-darwin-x64/biome",
+    "linux-x64": "src/Services/acme-web/node_modules/.pnpm/@biomejs+cli-linux-x64@2.5.0/node_modules/@biomejs/cli-linux-x64/biome",
+    "linux-arm64": "src/Services/acme-web/node_modules/.pnpm/@biomejs+cli-linux-arm64@2.5.0/node_modules/@biomejs/cli-linux-arm64/biome",
+    "win32-x64": "src/Services/acme-web/node_modules/.pnpm/@biomejs+cli-win32-x64@2.5.0/node_modules/@biomejs/cli-win32-x64/biome.exe",
+    "win32-arm64": "src/Services/acme-web/node_modules/.pnpm/@biomejs+cli-win32-arm64@2.5.0/node_modules/@biomejs/cli-win32-arm64/biome.exe"
+  },
+  // Use Biome (not VS Code's built-in formatter) for the web file types, so editor formatting matches
+  // `pnpm run format`. Scoped per-language so C# keeps using its own formatter (CSharpier).
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  // Format C# with CSharpier on save (the repo's local dotnet tool — .config/dotnet-tools.json),
+  // matching the `dotnet csharpier` gate.
+  "[csharp]": {
+    "editor.defaultFormatter": "csharpier.csharpier-vscode",
+    "editor.formatOnSave": true
+  }
+}

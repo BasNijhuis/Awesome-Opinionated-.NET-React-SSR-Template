@@ -1,0 +1,17 @@
+{
+  "appName": "Acme",
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "nl": "Nederlands"
+  },
+  "nav": {
+    "home": "Home",
+    "greetings": "Greetings",
+    "widgets": "Widgets"
+  },
+  "dismiss": "Dismiss",
+  "footer": {
+    "tagline": "Acme — an opinionated full-stack template."
+  }
+}

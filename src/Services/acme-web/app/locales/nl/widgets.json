@@ -1,0 +1,15 @@
+{
+  "title": "Widgets",
+  "subtitle": "Maak widgets aan met een naam en aantal; de lijst wordt van de API geladen.",
+  "form": {
+    "nameLabel": "Naam",
+    "namePlaceholder": "Gadget",
+    "quantityLabel": "Aantal",
+    "submit": "Widget toevoegen"
+  },
+  "list": {
+    "empty": "Nog geen widgets — voeg hierboven de eerste toe.",
+    "quantity": "Aantal: {{count}}",
+    "createdAt": "Toegevoegd op {{date}}"
+  }
+}

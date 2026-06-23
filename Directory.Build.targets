@@ -1,0 +1,38 @@
+<Project>
+  <!--
+    Auto-wire the Domain immutability analyzers (#23, ADR-0017) into every domain-layer project, keyed
+    off the naming convention — any project ending in `.Domain` plus the `DomainAbstractions` building
+    block — so individual .csproj files don't repeat the analyzer reference + opt-in. The analyzer
+    project itself (`*.DomainAnalyzers`) and tests (`*.Tests`) don't match, so there's no self-reference.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Domain')) Or $(MSBuildProjectName.EndsWith('.DomainAbstractions'))">
+    <EnforceImmutability>true</EnforceImmutability>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Domain')) Or $(MSBuildProjectName.EndsWith('.DomainAbstractions'))">
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)src/BuildingBlocks/Acme.DomainAnalyzers/Acme.DomainAnalyzers.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+    <CompilerVisibleProperty Include="EnforceImmutability" />
+  </ItemGroup>
+
+  <!--
+    The EF-entity-boundary analyzer (ACME006, #56) runs where EF mapping lives — any `.Infrastructure`
+    project — and forbids mapping a domain type as an EF entity (DbSet/Entity/HasOne/… of a `.Domain`
+    type); map an Application-layer `*Entity` instead. Same analyzer assembly, a separate opt-in flag.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
+    <EnforceEfEntityBoundary>true</EnforceEfEntityBoundary>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)src/BuildingBlocks/Acme.DomainAnalyzers/Acme.DomainAnalyzers.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+    <CompilerVisibleProperty Include="EnforceEfEntityBoundary" />
+  </ItemGroup>
+</Project>

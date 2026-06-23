@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Acme.Modules.Widgets.Application.Contracts\Acme.Modules.Widgets.Application.Contracts.csproj" />
+    <ProjectReference Include="..\Acme.Modules.Widgets.Domain.Contracts\Acme.Modules.Widgets.Domain.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Acme.CQRS.Abstractions\Acme.CQRS.Abstractions.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Acme.Http\Acme.Http.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,5 @@
+{
+  "invalidRequest": "Invalid request.",
+  "not_found": "That item could not be found.",
+  "validation_failed": "Please check the highlighted fields and try again."
+}

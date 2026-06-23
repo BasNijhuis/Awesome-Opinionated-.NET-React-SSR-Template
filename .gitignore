@@ -1,0 +1,34 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# Generated OpenAPI document (build artifact)
+src/Services/Acme.Api/openapi/
+
+# IDE
+.vs/
+*.user
+*.suo
+.idea/
+
+# Frontend
+src/Services/acme-web/node_modules/
+src/Services/acme-web/build/
+src/Services/acme-web/.react-router/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Aspire
+.aspire/
+
+# Keep lockfiles
+!src/Services/acme-web/pnpm-lock.yaml

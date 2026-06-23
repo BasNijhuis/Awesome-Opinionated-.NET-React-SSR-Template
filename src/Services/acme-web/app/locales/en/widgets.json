@@ -1,0 +1,15 @@
+{
+  "title": "Widgets",
+  "subtitle": "Create widgets with a name and quantity; the list is loaded from the API.",
+  "form": {
+    "nameLabel": "Name",
+    "namePlaceholder": "Gadget",
+    "quantityLabel": "Quantity",
+    "submit": "Add widget"
+  },
+  "list": {
+    "empty": "No widgets yet — add the first one above.",
+    "quantity": "Quantity: {{count}}",
+    "createdAt": "Added {{date}}"
+  }
+}

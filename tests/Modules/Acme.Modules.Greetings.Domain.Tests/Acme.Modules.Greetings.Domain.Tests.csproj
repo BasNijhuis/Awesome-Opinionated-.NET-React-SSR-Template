@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\TestProjects.props" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Acme.Modules.Greetings.Domain.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Greetings.Domain\Acme.Modules.Greetings.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Greetings.Domain.Contracts\Acme.Modules.Greetings.Domain.Contracts.csproj" />
+  </ItemGroup>
+</Project>

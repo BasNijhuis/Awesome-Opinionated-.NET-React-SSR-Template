@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\TestProjects.props" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Acme.Api.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Services\Acme.Api\Acme.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Misc\Acme.ApiClient\Acme.ApiClient.csproj" />
+    <ProjectReference Include="..\..\..\src\Kernel\Acme.Kernel.Application\Acme.Kernel.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Kernel\Acme.Kernel.Infrastructure\Acme.Kernel.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

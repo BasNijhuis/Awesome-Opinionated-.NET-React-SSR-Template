@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\TestProjects.props" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Acme.Architecture.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- References every production assembly so its IL can be inspected. -->
+    <ProjectReference Include="..\..\src\BuildingBlocks\Acme.DomainAbstractions\Acme.DomainAbstractions.csproj" />
+    <ProjectReference Include="..\..\src\Kernel\Acme.Kernel.Domain\Acme.Kernel.Domain.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\Acme.CQRS.Abstractions\Acme.CQRS.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\Acme.CQRS\Acme.CQRS.csproj" />
+    <ProjectReference Include="..\..\src\Kernel\Acme.Kernel.Application\Acme.Kernel.Application.csproj" />
+    <ProjectReference Include="..\..\src\Kernel\Acme.Kernel.Infrastructure\Acme.Kernel.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Acme.Api\Acme.Api.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Greetings.Domain\Acme.Modules.Greetings.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Greetings.Domain.Contracts\Acme.Modules.Greetings.Domain.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Greetings.Application\Acme.Modules.Greetings.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Greetings.Application.Contracts\Acme.Modules.Greetings.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Greetings.Infrastructure\Acme.Modules.Greetings.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Greetings.Endpoints\Acme.Modules.Greetings.Endpoints.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Widgets.Domain\Acme.Modules.Widgets.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Widgets.Domain.Contracts\Acme.Modules.Widgets.Domain.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Widgets.Application\Acme.Modules.Widgets.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Widgets.Application.Contracts\Acme.Modules.Widgets.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Widgets.Infrastructure\Acme.Modules.Widgets.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Acme.Modules.Widgets.Endpoints\Acme.Modules.Widgets.Endpoints.csproj" />
+  </ItemGroup>
+</Project>

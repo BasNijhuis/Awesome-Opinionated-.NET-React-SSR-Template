@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "description": "Een opinionated full-stack template: React Router SSR, .NET Aspire en een getypte API-client."
+  },
+  "hero": {
+    "eyebrow": "Welkom",
+    "subtitle": "Een startpunt voor full-stack apps met server-side rendering, i18n en een getypte API-grens."
+  },
+  "blurb": "Deze template koppelt een React Router SSR-frontend aan een .NET-API via een gegenereerde, met Zod gevalideerde client. Loaders en actions praten alleen op de server met de API (ADR-0003). De twee voorbeeldpagina's hieronder laten het patroon van begin tot eind zien.",
+  "cards": {
+    "greetings": {
+      "title": "Begroetingen",
+      "body": "Begroetingen tonen en aanmaken — een minimale lees/schrijf-functie.",
+      "cta": "Open begroetingen"
+    },
+    "widgets": {
+      "title": "Widgets",
+      "body": "Widgets tonen en aanmaken met een naam en aantal.",
+      "cta": "Open widgets"
+    }
+  }
+}

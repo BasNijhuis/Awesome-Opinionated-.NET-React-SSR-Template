@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Acme.Modules.Widgets.Domain.Contracts\Acme.Modules.Widgets.Domain.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Acme.CQRS.Abstractions\Acme.CQRS.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

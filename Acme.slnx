@@ -1,0 +1,59 @@
+<Solution>
+  <Folder Name="/src/Services/">
+    <Project Path="src/Services/Acme.Api/Acme.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Misc/">
+    <Project Path="src/Misc/Acme.ApiClient/Acme.ApiClient.csproj" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Aspire/">
+    <Project Path="src/Aspire/Acme.AppHost/Acme.AppHost.csproj" />
+    <Project Path="src/Aspire/Acme.ServiceDefaults/Acme.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/Kernel/">
+    <Project Path="src/Kernel/Acme.Kernel.Domain/Acme.Kernel.Domain.csproj" />
+    <Project Path="src/Kernel/Acme.Kernel.Application/Acme.Kernel.Application.csproj" />
+    <Project Path="src/Kernel/Acme.Kernel.Contracts/Acme.Kernel.Contracts.csproj" />
+    <Project Path="src/Kernel/Acme.Kernel.Infrastructure/Acme.Kernel.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/Acme.DomainAbstractions/Acme.DomainAbstractions.csproj" />
+    <Project Path="src/BuildingBlocks/Acme.CQRS.Abstractions/Acme.CQRS.Abstractions.csproj" />
+    <Project Path="src/BuildingBlocks/Acme.CQRS/Acme.CQRS.csproj" />
+    <Project Path="src/BuildingBlocks/Acme.Http/Acme.Http.csproj" />
+    <Project Path="src/BuildingBlocks/Acme.DomainAnalyzers/Acme.DomainAnalyzers.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/Acme.Modules.Greetings.Domain/Acme.Modules.Greetings.Domain.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Greetings.Domain.Contracts/Acme.Modules.Greetings.Domain.Contracts.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Greetings.Application.Contracts/Acme.Modules.Greetings.Application.Contracts.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Greetings.Application/Acme.Modules.Greetings.Application.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Greetings.Infrastructure/Acme.Modules.Greetings.Infrastructure.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Greetings.Endpoints/Acme.Modules.Greetings.Endpoints.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Widgets.Domain/Acme.Modules.Widgets.Domain.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Widgets.Domain.Contracts/Acme.Modules.Widgets.Domain.Contracts.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Widgets.Application.Contracts/Acme.Modules.Widgets.Application.Contracts.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Widgets.Application/Acme.Modules.Widgets.Application.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Widgets.Infrastructure/Acme.Modules.Widgets.Infrastructure.csproj" />
+    <Project Path="src/Modules/Acme.Modules.Widgets.Endpoints/Acme.Modules.Widgets.Endpoints.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Acme.Architecture.Tests/Acme.Architecture.Tests.csproj" />
+    <Project Path="tests/Acme.TestSupport/Acme.TestSupport.csproj" />
+  </Folder>
+  <Folder Name="/tests/BuildingBlocks/">
+    <Project Path="tests/BuildingBlocks/Acme.DomainAbstractions.Tests/Acme.DomainAbstractions.Tests.csproj" />
+    <Project Path="tests/BuildingBlocks/Acme.DomainAnalyzers.Tests/Acme.DomainAnalyzers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Kernel/">
+    <Project Path="tests/Kernel/Acme.Kernel.Application.Tests/Acme.Kernel.Application.Tests.csproj" />
+    <Project Path="tests/Kernel/Acme.Kernel.Infrastructure.Tests/Acme.Kernel.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Modules/">
+    <Project Path="tests/Modules/Acme.Modules.Greetings.Domain.Tests/Acme.Modules.Greetings.Domain.Tests.csproj" />
+    <Project Path="tests/Modules/Acme.Modules.Widgets.Domain.Tests/Acme.Modules.Widgets.Domain.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Services/">
+    <Project Path="tests/Services/Acme.Api.Tests/Acme.Api.Tests.csproj" />
+  </Folder>
+</Solution>

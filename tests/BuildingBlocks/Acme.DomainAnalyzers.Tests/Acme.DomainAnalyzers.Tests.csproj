@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\TestProjects.props" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Acme.DomainAnalyzers.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Framework-agnostic analyzer verifier (CSharpAnalyzerTest<,>); the ...Testing.XUnit
+         package targets xUnit v2 and is intentionally NOT used. Workspaces is needed for the
+         harness to resolve references. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\BuildingBlocks\Acme.DomainAnalyzers\Acme.DomainAnalyzers.csproj" />
+  </ItemGroup>
+</Project>

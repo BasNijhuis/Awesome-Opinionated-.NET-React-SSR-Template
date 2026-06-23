@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <!-- Solution-wide target framework (override per project only if ever needed). -->
+    <TargetFramework>net10.0</TargetFramework>
+
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+
+    <!-- Deterministic, committed NuGet restore via packages.lock.json. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+</Project>

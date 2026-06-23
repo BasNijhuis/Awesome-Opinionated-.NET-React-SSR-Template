@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NSwag.ApiDescription.Client">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Build-order only: ensures the API project's openapi/v1.json exists before this project
+         generates its client. The API assembly itself is not referenced. -->
+    <ProjectReference
+      Include="..\..\Services\Acme.Api\Acme.Api.csproj"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Generates a strongly-typed client into obj/ (git-ignored) at build time. -->
+    <OpenApiReference
+      Include="..\..\Services\Acme.Api\openapi\v1.json"
+      CodeGenerator="NSwagCSharp"
+      ClassName="AcmeApiClient"
+      Namespace="Acme.ApiClient"
+      Options="/UseBaseUrl:false /GenerateClientInterfaces:true"
+    />
+  </ItemGroup>
+</Project>

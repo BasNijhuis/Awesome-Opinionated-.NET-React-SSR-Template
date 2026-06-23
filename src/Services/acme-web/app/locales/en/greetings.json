@@ -1,0 +1,13 @@
+{
+  "title": "Greetings",
+  "subtitle": "Every greeting is fetched and created through the API on the server.",
+  "form": {
+    "messageLabel": "Message",
+    "messagePlaceholder": "Hello, world",
+    "submit": "Add greeting"
+  },
+  "list": {
+    "empty": "No greetings yet — add the first one above.",
+    "createdAt": "Added {{date}}"
+  }
+}

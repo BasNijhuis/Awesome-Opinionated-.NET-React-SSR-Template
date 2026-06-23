@@ -1,0 +1,2 @@
+# Auto-generated EF Core migrations — every module/context owns its own Migrations folder
+**/Persistence/Migrations/

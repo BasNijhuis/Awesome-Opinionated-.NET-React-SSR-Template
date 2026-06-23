@@ -1,0 +1,19 @@
+.DS_Store
+.env
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+
+# Generated API client (build artifact)
+app/lib/api/generated/
+
+# Playwright (E2E)
+/playwright-report/
+/test-results/
+/blob-report/
+/.playwright/
+
+# Coverage reports (published as CI artifacts, not committed)
+/coverage/
