@@ -9,23 +9,23 @@ test("language toggle switches the home page between English and Dutch", async (
 
   // Default locale is English.
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("link", { name: "Greetings" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Greetings", exact: true })).toBeVisible();
 
   // Switch to Dutch via the language toggle.
   await page.getByRole("button", { name: "Nederlands" }).click();
 
   await expect(page.locator("html")).toHaveAttribute("lang", "nl");
-  await expect(page.getByRole("link", { name: "Begroetingen" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Begroetingen", exact: true })).toBeVisible();
   // English nav label is gone.
-  await expect(page.getByRole("link", { name: "Greetings" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Greetings", exact: true })).toHaveCount(0);
 
   // The cookie persists the choice across a hard reload.
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "nl");
-  await expect(page.getByRole("link", { name: "Begroetingen" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Begroetingen", exact: true })).toBeVisible();
 
   // Switch back to English.
   await page.getByRole("button", { name: "English" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("link", { name: "Greetings" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Greetings", exact: true })).toBeVisible();
 });
