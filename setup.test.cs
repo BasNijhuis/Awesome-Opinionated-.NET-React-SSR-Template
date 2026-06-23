@@ -241,7 +241,10 @@ Console.WriteLine("E. derived defaults (ShopFront)");
     Check("slnx uses prefix", Has(f, "ShopFront.slnx"));
     Check("web defaults to <kebab>-web", Has(f, "src/Services/shop-front-web/package.json"));
     var prog = Read(f, "src/Services/ShopFront.Api/Program.cs");
-    Check("db defaults to snake_case kebab", prog.Contains("AddDatabase(\"shop_front\")"));
+    Check(
+        "db defaults to kebab (Aspire-valid, no underscore)",
+        prog.Contains("AddDatabase(\"shop-front\")")
+    );
     Check("api defaults to <kebab>-api", prog.Contains("(\"shop-front-api\")"));
     Check("web resource derived", prog.Contains("AddJavaScriptApp(\"shop-front-web\""));
     Check(
