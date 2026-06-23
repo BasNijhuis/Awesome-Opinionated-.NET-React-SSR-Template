@@ -189,11 +189,44 @@ docs/                             # ADRs + developer instructions
 
 ## Make it yours
 
-1. Rename the solution, namespaces (`Acme.*`), the web folder (`acme-web`), the database (`acme`), and the
-   analyzer prefix (`ACME`) to your project.
-2. Copy a module (Greetings is the simplest) as the template for your first real capability, then delete
-   the examples.
-3. Adjust the locales, theme tokens, and `NotificationsHub` channels to taste.
+**Run the AI setup skill — it drives the whole thing.** It asks what you're building, then runs the
+rename script for you and does the parts that need judgement: scaffolding real modules for your kind of
+app (replacing the `Greetings`/`Widgets` examples), generating their EF migrations, regenerating the
+OpenAPI + TypeScript/C# clients, and rewriting this README.
+
+- **Claude Code:** `/setup-template`
+- **GitHub Copilot:** the `setup-template` prompt (`.github/prompts/`)
+- **Codex / Gemini / Cursor:** see `AGENTS.md` / `GEMINI.md` / `.cursor/rules/`
+
+All five share one source of truth: [`docs/template-setup.md`](docs/template-setup.md).
+
+### The rename script (run directly, if you prefer)
+
+The mechanical rename lives in a cross-platform script (macOS, Linux, Windows; needs only the .NET 10
+SDK). The skill runs it for you, but you can run it yourself:
+
+```bash
+dotnet run setup.cs            # interactive
+# or: ./setup.sh   (macOS/Linux)   ·   .\setup.ps1   (Windows)
+dotnet run setup.cs -- --dry-run   # preview every change, write nothing
+```
+
+It asks where to create the project (rename **in place**, or `--target=<dir>` to copy the template
+to a fresh location first and leave this one untouched), then asks for — and rewrites everywhere — the
+values you'd otherwise hand-edit across 200+ files:
+
+| Prompt | Default | Renames |
+|---|---|---|
+| Namespace / `.slnx` prefix | `Acme` | all `Acme.*` projects, namespaces, folders, `Acme.slnx` |
+| Analyzer prefix | `ACME` | the `ACME001…` domain-analyzer diagnostic ids |
+| Frontend folder / web resource | `acme-web` | the folder, `package.json`, Aspire resource, CI, Biome |
+| API resource | `acme-api` | the Aspire resource + SSR discovery var |
+| Database name | `acme` | `AddDatabase` + every `GetConnectionString` |
+| Project title / license holder | — | README + `LICENSE` |
+
+It can also wipe/initialize git history (`--reinit-git`) and remove itself when done
+(`--remove-tooling` — deletes the script, wrappers, skill files, and its own CI job). The script's
+behaviour is covered by `setup.test.cs` (`dotnet run setup.test.cs`).
 
 ## License
 
