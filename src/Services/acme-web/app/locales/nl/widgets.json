@@ -10,6 +10,8 @@
   "list": {
     "empty": "Nog geen widgets — voeg hierboven de eerste toe.",
     "quantity": "Aantal: {{count}}",
-    "createdAt": "Toegevoegd op {{date}}"
+    "createdAt": "Toegevoegd op {{date}}",
+    "increment": "Eén toevoegen aan aantal",
+    "decrement": "Eén verwijderen van aantal"
   }
 }

@@ -1,4 +1,5 @@
 using Acme.DomainAbstractions;
+using Acme.Kernel.Domain.DomainEvents;
 using Acme.Modules.Widgets.Domain.Contracts;
 
 namespace Acme.Modules.Widgets.Domain;
@@ -32,4 +33,31 @@ public sealed record Widget : AggregateRoot
 
     public static Widget Rehydrate(IWidgetState state) =>
         new(state.Id, state.Name, state.Quantity, state.CreatedAt);
+
+    /// <summary>
+    /// Adjusts the quantity by <paramref name="delta"/> (positive to add stock, negative to remove).
+    /// Immutable transition (#23): returns a <em>new</em> <see cref="Widget"/> that raises a
+    /// <see cref="WidgetQuantityAdjusted"/> domain event. The quantity may never go negative — that's
+    /// an expected, recoverable failure (a <see cref="ErrorCategory.Conflict"/>), not an exception.
+    /// </summary>
+    public Result<Widget> AdjustQuantity(int delta)
+    {
+        var newQuantity = Quantity + delta;
+        if (newQuantity < 0)
+        {
+            return Result<Widget>.Failure(
+                Error.Conflict(
+                    "widget_quantity_negative",
+                    $"Adjusting '{Name}' by {delta} would make its quantity negative ({newQuantity})."
+                )
+            );
+        }
+
+        var adjusted = this with { Quantity = newQuantity };
+        return Result.Success(
+            adjusted.RaiseEvent<Widget>(
+                new WidgetQuantityAdjusted(Id.Value, Name, Quantity, newQuantity)
+            )
+        );
+    }
 }

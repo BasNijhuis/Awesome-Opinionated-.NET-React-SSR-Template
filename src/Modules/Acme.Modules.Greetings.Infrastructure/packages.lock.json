@@ -581,6 +581,7 @@
           "Acme.CQRS.Abstractions": "[1.0.0, )",
           "Acme.Kernel.Application": "[1.0.0, )",
           "Acme.Kernel.Contracts": "[1.0.0, )",
+          "Acme.Kernel.Domain": "[1.0.0, )",
           "Acme.Modules.Greetings.Application.Contracts": "[1.0.0, )",
           "Acme.Modules.Greetings.Domain": "[1.0.0, )"
         }

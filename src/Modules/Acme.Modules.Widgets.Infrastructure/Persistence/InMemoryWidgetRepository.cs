@@ -24,6 +24,20 @@ public sealed class InMemoryWidgetRepository(InMemoryWidgetStore store, TrackedA
         tracked.Track(widget);
     }
 
+    public void Update(Widget widget)
+    {
+        var entity =
+            store.Widgets.GetValueOrDefault(widget.Id)
+            ?? throw new InvalidOperationException(
+                $"Widget {widget.Id} is not in the store; load it via {nameof(GetByIdAsync)} before "
+                    + $"calling {nameof(Update)}."
+            );
+
+        // Write through onto the stored entity (the working set), mirroring EF's tracked-entity update.
+        WidgetPersistenceMapper.ApplyToEntity(widget, entity);
+        tracked.Track(widget);
+    }
+
     public Task<Widget?> GetByIdAsync(WidgetId id, CancellationToken cancellationToken)
     {
         var entity = store.Widgets.GetValueOrDefault(id);

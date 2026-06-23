@@ -17,8 +17,26 @@ public static class WidgetsEndpoints
         group.MapPost("/", CreateWidget).WithName(nameof(CreateWidget)).ProducesDomainProblems();
         group.MapGet("/{id:guid}", GetWidget).WithName(nameof(GetWidget)).ProducesDomainProblems();
         group.MapGet("/", ListWidgets).WithName(nameof(ListWidgets)).ProducesDomainProblems();
+        group
+            .MapPost("/{id:guid}/adjust-quantity", AdjustWidgetQuantity)
+            .WithName(nameof(AdjustWidgetQuantity))
+            .ProducesDomainProblems();
 
         return app;
+    }
+
+    private static async Task<EndpointResult<Ok<WidgetDto>>> AdjustWidgetQuantity(
+        Guid id,
+        AdjustWidgetQuantityRequest body,
+        IRequestDispatcher dispatcher,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await dispatcher.SendAsync(
+            new AdjustWidgetQuantityCommand { Id = new WidgetId(id), Delta = body.Delta },
+            cancellationToken
+        );
+        return result.ToOk();
     }
 
     private static async Task<EndpointResult<Created<CreateWidgetResult>>> CreateWidget(
@@ -58,3 +76,5 @@ public static class WidgetsEndpoints
 }
 
 public sealed record CreateWidgetRequest(string Name, int Quantity);
+
+public sealed record AdjustWidgetQuantityRequest(int Delta);
