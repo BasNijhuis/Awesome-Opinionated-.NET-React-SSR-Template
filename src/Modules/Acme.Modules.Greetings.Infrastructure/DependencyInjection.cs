@@ -19,6 +19,10 @@ public static class DependencyInjection
     {
         services.AddCqrsHandlersFrom(typeof(Application.AssemblyMarker).Assembly);
 
+        // Locale-aware, DB-free — registered in both modes (it only needs the kernel locale + random
+        // ports, like the host registers ILocaleProvider).
+        services.AddScoped<IGreetingSuggestionProvider, LocalGreetingSuggestionProvider>();
+
         if (configuration.GetValue("Persistence:UseInMemory", false))
         {
             services.AddSingleton<InMemoryGreetingStore>();

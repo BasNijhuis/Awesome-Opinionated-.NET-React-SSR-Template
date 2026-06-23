@@ -4,6 +4,7 @@
   "form": {
     "messageLabel": "Message",
     "messagePlaceholder": "Hello, world",
+    "suggestion": "Need inspiration? Try: \"{{suggestion}}\"",
     "submit": "Add greeting"
   },
   "list": {

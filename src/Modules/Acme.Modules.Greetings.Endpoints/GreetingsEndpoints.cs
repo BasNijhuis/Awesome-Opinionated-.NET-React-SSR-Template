@@ -23,8 +23,23 @@ public static class GreetingsEndpoints
             .WithName(nameof(GetGreeting))
             .ProducesDomainProblems();
         group.MapGet("/", ListGreetings).WithName(nameof(ListGreetings)).ProducesDomainProblems();
+        group
+            .MapGet("/suggestion", SuggestGreeting)
+            .WithName(nameof(SuggestGreeting))
+            .ProducesDomainProblems();
 
         return app;
+    }
+
+    private static async Task<EndpointResult<Ok<GreetingSuggestionDto>>> SuggestGreeting(
+        IRequestDispatcher dispatcher,
+        CancellationToken cancellationToken
+    )
+    {
+        // No locale parameter: the API derives it from Accept-Language (ILocaleProvider), which the SSR
+        // forwards from the user's chosen language.
+        var result = await dispatcher.QueryAsync(new SuggestGreetingQuery(), cancellationToken);
+        return result.ToOk();
     }
 
     private static async Task<EndpointResult<Created<CreateGreetingResult>>> CreateGreeting(
