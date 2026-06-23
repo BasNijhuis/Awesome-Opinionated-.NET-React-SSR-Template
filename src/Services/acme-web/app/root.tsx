@@ -13,7 +13,16 @@ import {
 import type { Route } from "./+types/root";
 import { getErrorMessage } from "./lib/errors";
 import { DEFAULT_LOCALE, resolveLocale } from "./lib/i18n";
+import { runWithLocale } from "./lib/locale-context.server";
 import "./app.css";
+
+// Runs before every loader/action on the server (document and data requests). Resolves the active
+// locale from the request (cookie → Accept-Language) and runs the rest of the request inside the
+// locale store, so every server-side API call forwards it as `Accept-Language` automatically —
+// callers never thread the locale through.
+export const middleware: Route.MiddlewareFunction[] = [
+  ({ request }, next) => runWithLocale(resolveLocale(request), () => next()),
+];
 
 // Resolve the active locale once on the server (cookie → Accept-Language → default) and expose it
 // so <html lang> matches what entry.server/entry.client seed their i18next instances with.

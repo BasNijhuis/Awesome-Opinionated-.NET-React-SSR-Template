@@ -21,6 +21,14 @@ public sealed record GetGreetingQuery : IQuery<GreetingDto>
 
 public sealed record ListGreetingsQuery : IQuery<IReadOnlyList<GreetingDto>>;
 
+/// <summary>Asks the backend for a greeting phrase in the caller's active locale.</summary>
+public sealed record SuggestGreetingQuery : IQuery<GreetingSuggestionDto>;
+
+public sealed record GreetingSuggestionDto
+{
+    public required string Suggestion { get; init; }
+}
+
 public sealed record GreetingDto
 {
     public required GreetingId Id { get; init; }

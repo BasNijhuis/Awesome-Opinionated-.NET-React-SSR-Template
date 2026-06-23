@@ -543,6 +543,7 @@
         "type": "Project",
         "dependencies": {
           "Acme.CQRS": "[1.0.0, )",
+          "Acme.Kernel.Domain": "[1.0.0, )",
           "Acme.Modules.Greetings.Application": "[1.0.0, )",
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.4.5, )",
           "Microsoft.Extensions.Configuration.Abstractions": "[10.0.9, )",

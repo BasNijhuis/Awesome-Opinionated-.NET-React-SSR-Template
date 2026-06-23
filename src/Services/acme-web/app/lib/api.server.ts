@@ -4,10 +4,12 @@ import {
   zCreateGreetingResult,
   zCreateWidgetResult,
   zGreetingDto,
+  zGreetingSuggestionDto,
   zWidgetDto,
 } from "./api/generated/zod.gen";
 import { getApiBaseUrl } from "./config.server";
 import { ApiError } from "./errors";
+import { currentLocale } from "./locale-context.server";
 
 // App-facing contract types are generated as `z.infer` of the Zod schemas (contract.gen.ts, #17) and
 // re-exported from this SSR boundary, so loaders/actions/components import them here. App code never
@@ -44,9 +46,12 @@ function unwrap<T>(result: SdkResult, schema: z.ZodType<T>): T {
   return parsed.data;
 }
 
-/** Common per-call options: inject the SSR base URL lazily (Aspire service discovery). */
+// Common per-call options: the SSR base URL (Aspire service discovery) plus the request's locale as
+// `Accept-Language`, so the API (ILocaleProvider) serves localized content in the user's language.
+// The locale comes from the request-scoped store set by the root middleware — every call forwards it,
+// no caller threads it through. Browser → SSR → API only (ADR-0003).
 function base() {
-  return { baseUrl: getApiBaseUrl() };
+  return { baseUrl: getApiBaseUrl(), headers: { "Accept-Language": currentLocale() } };
 }
 
 // ---- greetings ----
@@ -61,6 +66,10 @@ export async function getGreeting(id: string) {
 
 export async function listGreetings() {
   return unwrap(await api.listGreetings({ ...base() }), z.array(zGreetingDto));
+}
+
+export async function suggestGreeting() {
+  return unwrap(await api.suggestGreeting({ ...base() }), zGreetingSuggestionDto);
 }
 
 // ---- widgets ----

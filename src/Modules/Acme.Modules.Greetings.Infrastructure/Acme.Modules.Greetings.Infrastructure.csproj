@@ -6,7 +6,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Acme.Modules.Greetings.Application\Acme.Modules.Greetings.Application.csproj" />
+    <ProjectReference Include="..\..\Kernel\Acme.Kernel.Domain\Acme.Kernel.Domain.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Acme.CQRS\Acme.CQRS.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="greeting-suggestions.json" />
   </ItemGroup>
 
   <ItemGroup>

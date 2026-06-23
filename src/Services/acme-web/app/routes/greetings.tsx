@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Form, redirect, useActionData } from "react-router";
 import { AppShell } from "../components/AppShell";
-import { createGreeting, listGreetings } from "../lib/api.server";
+import { createGreeting, listGreetings, suggestGreeting } from "../lib/api.server";
 import { createGreetingFormSchema, type FieldErrors, fieldErrorsOf, parseForm } from "../lib/forms";
 import type { Route } from "./+types/greetings";
 
@@ -10,8 +10,10 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function loader(_: Route.LoaderArgs) {
-  const greetings = await listGreetings();
-  return { greetings };
+  // The suggestion comes back localized: api.server forwards the request locale as Accept-Language on
+  // every call (root middleware + locale store), so the backend (ILocaleProvider) picks the language.
+  const [greetings, suggestion] = await Promise.all([listGreetings(), suggestGreeting()]);
+  return { greetings, suggestion: suggestion.suggestion };
 }
 
 type GreetingsActionData = { fieldErrors: FieldErrors } | null;
@@ -36,7 +38,7 @@ function FieldError({ messages }: { messages?: string[] }) {
 }
 
 export default function Greetings({ loaderData }: Route.ComponentProps) {
-  const { greetings } = loaderData;
+  const { greetings, suggestion } = loaderData;
   const { t, i18n } = useTranslation("greetings");
   const actionData = useActionData() as GreetingsActionData;
   const dateFormatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" });
@@ -56,6 +58,10 @@ export default function Greetings({ loaderData }: Route.ComponentProps) {
             />
             <FieldError messages={actionData?.fieldErrors?.message} />
           </label>
+          {/* Localized suggestion served by the backend (ILocaleProvider) in the request's language. */}
+          <p className="text-surface-muted text-xs" data-testid="greeting-suggestion">
+            {t("form.suggestion", { suggestion })}
+          </p>
           <button type="submit" className="btn-primary" data-testid="greeting-submit">
             {t("form.submit")}
           </button>
