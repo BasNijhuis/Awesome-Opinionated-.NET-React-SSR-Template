@@ -178,7 +178,7 @@ src/
   BuildingBlocks/Acme.*           # CQRS(.Abstractions), DomainAbstractions, Http, DomainAnalyzers
   Modules/Acme.Modules.<M>.*      # capability modules (Greetings, Widgets)
   Misc/Acme.ApiClient             # NSwag-generated C# client (build artifact)
-scripts/                          # workspace member: web build helper (generate-contract-types.ts)
+scripts/                          # workspace member: web build helper (generate-api-types.ts)
 tests/                            # xUnit v3 + MTP v2, incl. NetArchTest boundary rules
 tests/e2e/                        # workspace member (package `e2e`): Playwright suite
 docs/                             # ADRs + developer instructions

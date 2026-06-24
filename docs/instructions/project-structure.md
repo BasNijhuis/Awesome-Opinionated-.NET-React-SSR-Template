@@ -19,7 +19,7 @@
 ├── docs/
 │   ├── adr/                       # architecture decision records
 │   └── instructions/              # this folder
-├── scripts/                       # pnpm workspace member `scripts` — web build helper (generate-contract-types.ts)
+├── scripts/                       # pnpm workspace member `scripts` — web build helper (generate-api-types.ts)
 ├── src/                          # modular monolith — see ADR-0014. .slnx solution folders in (parens)
 │   ├── Services/Acme.Api/          # HTTP host — composes modules + OpenAPI + the NotificationsHub (Services)
 │   ├── Services/acme-web/         # React Router SSR (pnpm) (Services; not a .slnx project)

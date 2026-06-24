@@ -11,10 +11,10 @@ import { getApiBaseUrl } from "./config.server";
 import { ApiError } from "./errors";
 import { currentLocale } from "./locale-context.server";
 
-// App-facing contract types are generated as `z.infer` of the Zod schemas (contract.gen.ts, #17) and
-// re-exported from this SSR boundary, so loaders/actions/components import them here. App code never
-// imports the static `types.gen.ts`; the SDK call functions (values) come from the generated index.
-export type * from "./api/generated/contract.gen";
+// App-facing contract types are `z.infer` of the Zod schemas (#17) — the post-processed `types.gen.ts`
+// makes the schemas the single source of truth — re-exported from this SSR boundary so loaders/actions/
+// components import them here. The SDK call functions (values) come from the generated index.
+export type * from "./api/generated/types.gen";
 
 export { ApiError, getErrorMessage } from "./errors";
 
