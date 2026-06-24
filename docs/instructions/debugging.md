@@ -68,6 +68,8 @@ aspire certs trust
 - Do not put breakpoints in `*.server.ts` from the browser—those run on the Node SSR process. Use Node inspector if needed:
 
   ```powershell
+  # pnpm links each member's deps into its own node_modules (the virtual store is hoisted to the
+  # repo root), so resolve @react-router/serve from the web member's node_modules.
   cd src/Services/acme-web
   node --inspect-brk node_modules/@react-router/serve/dist/cli.js ./build/server/index.js
   ```

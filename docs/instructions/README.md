@@ -24,9 +24,9 @@ dotnet run --project src/Aspire/Acme.AppHost
 dotnet build Acme.slnx
 dotnet test --solution Acme.slnx
 
-# Frontend only (standalone)
-cd src/Services/acme-web
-pnpm run dev
+# Frontend only (standalone) — install once at the repo root, then run the member
+pnpm install
+pnpm --filter acme-web run dev
 
 # Trust HTTPS dev certs (once per machine)
 dotnet dev-certs https --trust

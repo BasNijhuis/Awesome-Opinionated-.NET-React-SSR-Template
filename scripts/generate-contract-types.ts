@@ -6,7 +6,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const generatedDir = resolve(dirname(fileURLToPath(import.meta.url)), "../app/lib/api/generated");
+// Lives in the repo-root `scripts/` workspace member; targets the web app's generated client dir.
+const generatedDir = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../src/Services/acme-web/app/lib/api/generated",
+);
 const source = readFileSync(resolve(generatedDir, "zod.gen.ts"), "utf8");
 
 // Every exported `z<Name>` schema → `export type <Name> = z.infer<typeof schemas.z<Name>>`.

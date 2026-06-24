@@ -11,9 +11,10 @@ The .NET side has CSharpier for formatting ([ADR-0011](./0011-build-hygiene-form
 
 Adopt **Biome** for the frontend:
 
-- `@biomejs/biome` (devDependency) + `biome.json` at the web project root.
-- Scripts: `pnpm run lint` (`biome check .`) and `pnpm run format` (`biome check --write .`).
-- **Respect `.gitignore`** (`vcs.useIgnoreFile`) and additionally exclude:
+- `@biomejs/biome` (catalog devDependency) + a single **root** `biome.json` covering all JS workspace members (`src/acme-web/**`, `scripts/**`, `tests/e2e/**`).
+- Scripts: root `pnpm run lint` (`biome check .`) and `pnpm run format` (`biome check --write .`) lint all members in one pass.
+- The Biome VS Code extension auto-discovers the binary from the hoisted root `node_modules` — no version-pinned `biome.lsp.bin` and no postinstall path-fix hack.
+- **Respect `.gitignore`** (`vcs.useIgnoreFile`) and additionally exclude the web's generated files:
   - `app/lib/api/generated/` — the generated API client ([ADR-0010](./0010-openapi-contract-generated-clients.md)),
   - `.react-router/` — generated route types,
   - `**/*.css` — Biome's CSS parser doesn't understand Tailwind 4 at-rules ([ADR-0004](./0004-react-router-ssr-pnpm.md)); Tailwind owns the CSS.

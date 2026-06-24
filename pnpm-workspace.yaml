@@ -1,0 +1,15 @@
+packages:
+  - "src/Services/acme-web"
+  - "scripts"
+  - "tests/e2e"
+
+# Dependencies allowed to run install scripts (pnpm blocks them by default). esbuild compiles its
+# native binary in a postinstall; Vite needs it to build.
+allowBuilds:
+  esbuild: true
+
+# Shared dev-dependency versions referenced by members via `catalog:`.
+catalog:
+  "@biomejs/biome": "2.5.0"
+  "@types/node": "26.0.0"
+  tsx: "4.22.4"

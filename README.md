@@ -67,8 +67,8 @@ One command starts everything:
 | `acme-api` | The internal HTTP API — migrations run on startup; **no external endpoint** |
 | `acme-web` | The React Router SSR app — **the only externally reachable surface** |
 
-On first run the web app installs packages and generates its typed API client; the API applies EF
-migrations for every module schema automatically. See
+On first run the web app generates its typed API client (run `pnpm install` once at the repo root
+beforehand); the API applies EF migrations for every module schema automatically. See
 [local-development.md](docs/instructions/local-development.md) for standalone (non-Aspire) runs,
 HTTPS certs, and troubleshooting.
 
@@ -79,9 +79,9 @@ dotnet build Acme.slnx                  # whole solution; analyzers run here
 dotnet test --solution Acme.slnx        # xUnit v3 + MTP v2 (Docker needed for the Testcontainers tests)
 dotnet csharpier format .               # C# formatting (CI uses `check`)
 
-cd src/Services/acme-web
-corepack pnpm run typecheck             # regenerates the API client, then tsc
-corepack pnpm run lint                  # Biome
+pnpm install                            # once, at the repo root (single pnpm workspace)
+pnpm --filter acme-web run typecheck    # regenerates the API client, then tsc
+pnpm run lint                           # Biome over all workspace members (web, scripts, tests/e2e)
 ```
 
 ---
@@ -166,16 +166,21 @@ migration, and a realtime notification on create:
 Acme.slnx                         # XML solution
 Directory.Build.props/.targets    # solution-wide TFM, analyzer auto-wiring
 Directory.Packages.props          # central package versions
+pnpm-workspace.yaml               # single root pnpm workspace (acme-web, scripts, tests/e2e)
+package.json / pnpm-lock.yaml     # root manifest + one lockfile; node_modules hoisted here
+biome.json                        # single root Biome config (web + scripts + tests/e2e)
 src/
   Aspire/Acme.AppHost             # orchestrator (entry point)
   Aspire/Acme.ServiceDefaults     # OpenTelemetry, health checks, service discovery
   Services/Acme.Api               # minimal-API host; composes modules + OpenAPI + SignalR hub
-  Services/acme-web               # React Router SSR frontend (pnpm, i18n en/nl, Biome)
+  Services/acme-web               # React Router SSR frontend (workspace member, i18n en/nl)
   Kernel/Acme.Kernel.*            # shared Domain/Application/Contracts/Infrastructure
   BuildingBlocks/Acme.*           # CQRS(.Abstractions), DomainAbstractions, Http, DomainAnalyzers
   Modules/Acme.Modules.<M>.*      # capability modules (Greetings, Widgets)
   Misc/Acme.ApiClient             # NSwag-generated C# client (build artifact)
+scripts/                          # workspace member: web build helper (generate-contract-types.ts)
 tests/                            # xUnit v3 + MTP v2, incl. NetArchTest boundary rules
+tests/e2e/                        # workspace member (package `e2e`): Playwright suite
 docs/                             # ADRs + developer instructions
 ```
 
@@ -222,11 +227,13 @@ values you'd otherwise hand-edit across 200+ files:
 | Frontend folder / web resource | `acme-web` | the folder, `package.json`, Aspire resource, CI, Biome |
 | API resource | `acme-api` | the Aspire resource + SSR discovery var |
 | Database name (kebab; also the Aspire resource name) | `acme` | `AddDatabase` + every `GetConnectionString` |
-| Project title / license holder | — | README + `LICENSE` |
+| Project title | — | README H1 |
 
-It can also wipe/initialize git history (`--reinit-git`) and remove itself when done
-(`--remove-tooling` — deletes the script, wrappers, skill files, and its own CI job). The script's
-behaviour is covered by `setup.test.cs` (`dotnet run setup.test.cs`).
+On a successful run it also removes the template's `LICENSE` (this one) so the generated project
+starts license-free — add your own if you need one. It can wipe/initialize git history
+(`--reinit-git`) and remove itself when done (`--remove-tooling` — deletes the script, wrappers,
+skill files, and its own CI job). The script's behaviour is covered by `setup.test.cs`
+(`dotnet run setup.test.cs`).
 
 ## License
 

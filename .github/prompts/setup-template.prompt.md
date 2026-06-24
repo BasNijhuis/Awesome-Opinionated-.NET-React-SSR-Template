@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 description: Initialize a new project from the Awesome Opinionated Template — rename + scaffold modules + verify.
 ---
 

@@ -22,7 +22,7 @@ Closes #
 - [ ] `dotnet build Acme.slnx` — clean
 - [ ] `dotnet test --solution Acme.slnx` — green
 - [ ] `dotnet csharpier check .` — formatted
-- [ ] `pnpm run typecheck` — passes (if the frontend changed)
+- [ ] `pnpm --filter acme-web run typecheck` — passes (if the frontend changed)
 
 ## Notes for reviewers
 

@@ -9,8 +9,9 @@ before changing structure.
 ## Build / test (quick reference)
 
 - Backend: `dotnet build *.slnx` · `dotnet test`
-- Frontend: `cd src/Services/*-web && pnpm install && pnpm run build && pnpm test`
-- Format: `dotnet csharpier .` · `pnpm run format`
+- Frontend: `pnpm install` once at the repo root (single pnpm workspace), then
+  `pnpm --filter acme-web run build` · `pnpm --filter acme-web run test`
+- Format: `dotnet csharpier .` · `pnpm run format` (Biome over all members, from the root)
 - Run the stack: see `docs/instructions/local-development.md` (Aspire AppHost).
 
 ## Setting up a new project from this template

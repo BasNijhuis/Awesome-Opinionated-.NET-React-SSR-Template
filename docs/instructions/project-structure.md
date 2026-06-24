@@ -9,10 +9,17 @@
 ├── global.json                    # MTP test runner
 ├── .config/dotnet-tools.json      # local tools (CSharpier)
 ├── .csharpierignore               # formatter exclusions (EF migrations)
+├── package.json                   # root pnpm workspace — packageManager + root lint/format scripts
+├── pnpm-workspace.yaml            # workspace members (acme-web, scripts, tests/e2e) + catalog + allowBuilds
+├── pnpm-lock.yaml                 # single committed lockfile for the whole workspace
+├── biome.json                     # single root Biome config (web + scripts + tests/e2e)
+├── .npmrc                         # pnpm config (verify-deps-before-run=false)
+├── node_modules/                  # hoisted to repo root (git-ignored)
 ├── .vscode/                       # launch.json, tasks.json
 ├── docs/
 │   ├── adr/                       # architecture decision records
 │   └── instructions/              # this folder
+├── scripts/                       # pnpm workspace member `scripts` — web build helper (generate-contract-types.ts)
 ├── src/                          # modular monolith — see ADR-0014. .slnx solution folders in (parens)
 │   ├── Services/Acme.Api/          # HTTP host — composes modules + OpenAPI + the NotificationsHub (Services)
 │   ├── Services/acme-web/         # React Router SSR (pnpm) (Services; not a .slnx project)
@@ -25,7 +32,8 @@
     ├── TestProjects.props              # shared xUnit v3 + adapters config
     ├── Acme.Architecture.Tests/        # NetArchTest boundary rules (ADR-0014)
     ├── Acme.Api.Tests/
-    └── Acme.Modules.<M>.*.Tests/       # per-module domain / persistence tests
+    ├── Acme.Modules.<M>.*.Tests/       # per-module domain / persistence tests
+    └── e2e/                            # pnpm workspace member `e2e` — Playwright suite (specs + playwright.config.ts)
 ```
 
 ## Modules & boundaries (ADR-0014)
@@ -84,10 +92,12 @@ acme-web/
 │   ├── locales/{en,nl}/   # i18next JSON namespaces (common, home, greetings, widgets, errors)
 │   └── root.tsx
 ├── openapi-ts.config.ts  # @hey-api/openapi-ts codegen config
-├── biome.json            # Biome lint/format config
-├── package.json          # pnpm, scripts
-└── pnpm-lock.yaml        # committed
+└── package.json          # workspace member `acme-web` — build/typecheck/lint/test/dev scripts
 ```
+
+Vitest unit tests stay co-located under `app/**`. Biome config, the lockfile, and `node_modules`
+live at the repo root (single workspace); the Playwright suite and the contract-types build helper
+have moved to the `tests/e2e` and `scripts` workspace members.
 
 ## Naming conventions
 
