@@ -57,7 +57,7 @@ export default [
 The TypeScript client is **generated from the API's OpenAPI document** with `@hey-api/openapi-ts` — never hand-write DTOs (see [ADR-0010](../adr/0010-openapi-contract-generated-clients.md)).
 
 - `openapi-ts.config.ts` reads the spec at `../Acme.Api/openapi/v1.json` (a `dotnet build` artifact) and emits the client into `app/lib/api/generated/`.
-- **Both the spec and `app/lib/api/generated/` are git-ignored build artifacts.** `pnpm --filter acme-web run api:generate` (run automatically by `dev`/`build`/`typecheck`/`prepare`) does `dotnet build` → `openapi-ts` → `pnpm --filter scripts run gen-contract` (the `generate-contract-types.ts` helper, which lives in the `scripts/` workspace member), so a fresh clone is self-contained with no running API. Never hand-edit the generated files.
+- **Both the spec and `app/lib/api/generated/` are git-ignored build artifacts.** `pnpm --filter acme-web run api:generate` (run automatically by `dev`/`build`/`typecheck`/`prepare`) does `dotnet build` → `openapi-ts` → `pnpm --filter scripts run gen-api-types` (the `generate-api-types.ts` helper, which lives in the `scripts/` workspace member and rewrites `types.gen.ts` so its DTO types are `z.infer` of the Zod schemas), so a fresh clone is self-contained with no running API. Never hand-edit the generated files.
 - After changing a C# DTO/endpoint, just re-run any of those scripts — types and SDK functions regenerate. There is no hand-authored type left.
 - `app/lib/api.server.ts` is a thin **SSR configurator**: it wraps the generated SDK functions, injects the base URL from `config.server.ts` per call, maps errors to `ApiError`, and re-exports the generated DTO types under their existing names.
 

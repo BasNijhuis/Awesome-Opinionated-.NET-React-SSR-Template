@@ -2,9 +2,9 @@
   "name": "scripts",
   "private": true,
   "type": "module",
-  "description": "Repo dev/build scripts (not part of the app runtime). Currently the web client's contract-type generator; add future repo tooling here.",
+  "description": "Repo dev/build scripts (not part of the app runtime). Currently the web client's API-type generator; add future repo tooling here.",
   "scripts": {
-    "gen-contract": "tsx generate-contract-types.ts"
+    "gen-api-types": "tsx generate-api-types.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

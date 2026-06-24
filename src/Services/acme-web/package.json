@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "api:generate": "dotnet build ../Acme.Api/Acme.Api.csproj && openapi-ts && pnpm -C ../../.. --filter scripts run gen-contract",
+    "api:generate": "dotnet build ../Acme.Api/Acme.Api.csproj && openapi-ts && pnpm -C ../../.. --filter scripts run gen-api-types",
     "build": "pnpm run api:generate && react-router build",
     "dev": "react-router dev",
     "start": "node ./server.js",

@@ -5,7 +5,7 @@ Run from the repo root via `pnpm --filter scripts run <name>`.
 
 | Script | Command | What it does |
 |--------|---------|--------------|
-| `gen-contract` | `pnpm --filter scripts run gen-contract` | Regenerate the web client's contract types (invoked by the web `api:generate`). |
+| `gen-api-types` | `pnpm --filter scripts run gen-api-types` | Rewrite the web client's generated `types.gen.ts` so its DTO types are `z.infer` of the Zod schemas (invoked by the web `api:generate`). |
 
 Add future repo tooling (data generators, codegen, migration helpers, …) here as additional scripts
 rather than scattering them across the app packages.
