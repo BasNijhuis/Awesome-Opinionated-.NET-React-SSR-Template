@@ -2,6 +2,8 @@ using Acme.CQRS.Abstractions;
 using Acme.DomainAbstractions;
 using Acme.Kernel.Application;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Acme.Kernel.Application.Tests;
 
@@ -29,6 +31,7 @@ public sealed class RequestDispatcherTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddApplication();
         services.AddScoped<IQueryHandler<PingQuery, string>, PingHandler>();
         await using var provider = services.BuildServiceProvider();
@@ -48,6 +51,7 @@ public sealed class RequestDispatcherTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddApplication();
         services.AddScoped<IQueryHandler<PingQuery, string>, PingHandler>();
         services.AddScoped<IRequestValidator<PingQuery>, PingValidator>();

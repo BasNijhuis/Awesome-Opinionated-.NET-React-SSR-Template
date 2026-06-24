@@ -3,10 +3,14 @@ using System.Reflection;
 using Acme.CQRS.Abstractions;
 using Acme.DomainAbstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Acme.CQRS;
 
-public sealed class RequestDispatcher(IServiceProvider serviceProvider) : IRequestDispatcher
+public sealed class RequestDispatcher(
+    IServiceProvider serviceProvider,
+    ILogger<RequestDispatcher> logger
+) : IRequestDispatcher
 {
     public Task<Result<TResult>> SendAsync<TResult>(
         ICommand<TResult> command,
@@ -31,6 +35,7 @@ public sealed class RequestDispatcher(IServiceProvider serviceProvider) : IReque
         var validationErrors = Validate(request, requestType);
         if (validationErrors.Count > 0)
         {
+            LogFailure(requestType, validationErrors);
             return Result<TResult>.Failure(validationErrors);
         }
 
@@ -59,8 +64,23 @@ public sealed class RequestDispatcher(IServiceProvider serviceProvider) : IReque
             );
         }
 
-        return await typedTask.ConfigureAwait(false);
+        var result = await typedTask.ConfigureAwait(false);
+        if (result.IsFailure)
+        {
+            LogFailure(requestType, result.Errors);
+        }
+
+        return result;
     }
+
+    // Centralized observability for expected (Result) failures across every command/query. Logged at
+    // Warning, not Error — these are recoverable control-flow failures (ADR-0013), not exceptions.
+    private void LogFailure(Type requestType, IReadOnlyList<Error> errors) =>
+        logger.LogWarning(
+            "{Request} failed: {Errors}",
+            requestType.Name,
+            string.Join("; ", errors.Select(e => $"{e.Category}/{e.Code}: {e.Message}"))
+        );
 
     private List<Error> Validate(object request, Type requestType)
     {
