@@ -14,7 +14,7 @@ Treat tests as part of the deliverable—not a follow-up. Before marking a task 
 dotnet test --solution Acme.slnx
 ```
 
-For frontend-only work, also run `pnpm run test` (Vitest + React Testing Library) and `pnpm run typecheck`.
+For frontend-only work, also run `pnpm --filter acme-web run test` (Vitest + React Testing Library) and `pnpm --filter acme-web run typecheck`.
 
 ### When tests apply
 
@@ -25,7 +25,7 @@ For frontend-only work, also run `pnpm run test` (Vitest + React Testing Library
 | Frontend pure helpers or prop-driven components | Unit tests in `acme-web` (Vitest + RTL) |
 | Bug fix | Regression test that would have failed before the fix |
 | Persistence, mapping, or cross-layer behavior | Integration or repository tests |
-| Full flow through the browser, or SignalR realtime across clients | E2E specs in `acme-web/e2e` (Playwright) |
+| Full flow through the browser, or SignalR realtime across clients | E2E specs in `tests/e2e` (Playwright) |
 | Refactor that preserves behavior | Existing tests must still pass; add tests if coverage was missing |
 
 Use **Arrange–Act–Assert** with a **single action in Act**, one behavior per test, **AwesomeAssertions** (`.Should()`), and deterministic fakes for any injected non-deterministic service (e.g. an `IRandomProvider`) when randomness affects assertions. Build domain test state with a builder (e.g. `GreetingBuilder`) in Arrange rather than calling aggregate methods inline.
@@ -289,23 +289,23 @@ builder.UseSetting("Persistence:UseInMemory", "true");
 Frontend unit/component tests run on **Vitest + React Testing Library** in `src/Services/acme-web`, separate from the xUnit backend suite.
 
 ```bash
-cd src/Services/acme-web && pnpm run test        # one-shot (CI)
-cd src/Services/acme-web && pnpm run test:watch  # local watch
+pnpm --filter acme-web run test         # one-shot (CI)
+pnpm --filter acme-web run test:watch   # local watch
 ```
 
-- Runs `app/**/*.test.{ts,tsx}` via a standalone `vitest.config.ts` (jsdom, `@testing-library/jest-dom`); it deliberately omits the `reactRouter()` Vite plugin.
+- Runs `app/**/*.test.{ts,tsx}` via a standalone `src/Services/acme-web/vitest.config.ts` (jsdom, `@testing-library/jest-dom`); it deliberately omits the `reactRouter()` Vite plugin.
 - **Scope:** pure helpers (e.g. `getErrorMessage`) and prop-driven components. Keep `*.server.ts` logic out of unit tests and **never hit a real API** — SSR loaders/actions and full browser flows belong in the Playwright E2E suite below.
-- For frontend-only work, run `pnpm run test`, `pnpm run typecheck`, and `pnpm run lint` before finishing. Full how-to: [Frontend development — testing](./frontend-development.md#testing-frontend-changes).
+- For frontend-only work, run `pnpm --filter acme-web run test`, `pnpm --filter acme-web run typecheck`, and `pnpm --filter acme-web run lint` before finishing. Full how-to: [Frontend development — testing](./frontend-development.md#testing-frontend-changes).
 
 ## End-to-end tests (Playwright)
 
-Full browser flows live in `src/Services/acme-web/e2e` and run on **Playwright** — separate from the xUnit suite and from the Vitest unit tests above. They are the right (and only) place to assert **SignalR realtime** behaviour end to end.
+Full browser flows live in `tests/e2e` and run on **Playwright** — separate from the xUnit suite and from the Vitest unit tests above. They are the right (and only) place to assert **SignalR realtime** behaviour end to end.
 
 ```bash
-cd src/Services/acme-web && pnpm run test:e2e
+pnpm --filter e2e run test:e2e
 ```
 
-- **The whole stack runs via Aspire.** Playwright's `webServer` runs `dotnet run` on the AppHost, which brings up Postgres + the API + the web's **production** server (`server.js`, which proxies `/hubs` to the API — the dev-only `vite.config.ts` proxy does not exist in a build). Setting `E2E_WEB_PORT` switches the AppHost into this mode (pinned port, production server). Specs target only the web origin ([ADR-0003](../adr/0003-internal-api-via-ssr.md)).
+- **The whole stack runs via Aspire.** Playwright's `webServer` (`tests/e2e/playwright.config.ts`) runs `dotnet run` on the AppHost, which brings up Postgres + the API + the web's **production** server (`server.js`, which proxies `/hubs` to the API — the dev-only `vite.config.ts` proxy does not exist in a build). Setting `E2E_WEB_PORT` switches the AppHost into this mode (pinned port, production server). Specs target only the web origin ([ADR-0003](../adr/0003-internal-api-via-ssr.md)).
 - **Docker required**; the boot is heavier than a unit run.
 - Stable `data-testid`s drive the specs; each test creates its own data for isolation.
 - Full how-to (selectors, startup model, flake-avoidance) is in [Frontend development — End-to-end tests](./frontend-development.md#end-to-end-tests-playwright).
@@ -317,10 +317,10 @@ CI is **build + test only — no deployment.** [`.github/workflows/ci.yml`](../.
 | Job | Runs (mirror locally) |
 |-----|------------------------|
 | **backend** | `dotnet build Acme.slnx` · `dotnet csharpier check .` · `dotnet test` (Testcontainers — needs Docker). The immutable-domain analyzer fails the build on an `ACME*` violation. |
-| **frontend** | `pnpm install --frozen-lockfile` · `pnpm run build` (also generates the OpenAPI client, so the job needs the .NET SDK) · `pnpm run typecheck` · `pnpm run lint` · `pnpm run test:coverage` |
-| **e2e** | `pnpm run test:e2e` — boots the full Aspire stack (Postgres + API + the production web server) and runs Playwright. Needs Docker; creates an HTTPS dev cert (`dotnet dev-certs https`, trusted via `SSL_CERT_DIR` on Linux) before Aspire's preflight. |
+| **frontend** | `pnpm install --frozen-lockfile` (once, at the repo root) · `pnpm --filter acme-web run build` (also generates the OpenAPI client, so the job needs the .NET SDK) · `pnpm --filter acme-web run typecheck` · `pnpm --filter acme-web run lint` · `pnpm --filter acme-web run test:coverage` |
+| **e2e** | `pnpm --filter e2e run test:e2e` — boots the full Aspire stack (Postgres + API + the production web server) and runs Playwright. Needs Docker; creates an HTTPS dev cert (`dotnet dev-certs https`, trusted via `SSL_CERT_DIR` on Linux) before Aspire's preflight. |
 
-- **Code coverage is collected and published as artifacts (`backend-coverage`, `frontend-coverage`) but never gates** — no thresholds. Backend uses the MTP `Microsoft.Testing.Extensions.CodeCoverage` extension (`dotnet test … --coverage --coverage-output-format cobertura`); frontend uses `@vitest/coverage-v8` (`pnpm run test:coverage`).
+- **Code coverage is collected and published as artifacts (`backend-coverage`, `frontend-coverage`) but never gates** — no thresholds. Backend uses the MTP `Microsoft.Testing.Extensions.CodeCoverage` extension (`dotnet test … --coverage --coverage-output-format cobertura`); frontend uses `@vitest/coverage-v8` (`pnpm --filter acme-web run test:coverage`).
 - **Architecture tests run without coverage.** Coverage instrumentation injects an assembly dependency that NetArchTest's "depends only on" / "is a leaf" rules reject, so `Acme.Architecture.Tests` runs on its own (no `--coverage`); every other test project runs with coverage.
 - **Backend restore is not `--locked-mode`:** the Aspire AppHost pulls RID-specific packages, so its lock file is platform-specific and would fail locked-mode on a differing CI RID. (The frontend's `pnpm install --frozen-lockfile` is the platform-safe lockfile gate.)
 - **The E2E AppHost injects `API_URL` explicitly** (`api.GetEndpoint("http")`): Aspire's `WithReference` discovery var isn't reliably surfaced to the production `node server.js`, and both the SSR client and the `/hubs` proxy read `API_URL` as the fallback.

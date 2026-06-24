@@ -93,9 +93,6 @@ jobs:
   frontend:
     name: Frontend (build + checks)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/Services/acme-web
     steps:
       - uses: actions/checkout@v4
 
@@ -117,11 +114,13 @@ jobs:
       - name: Enable Corepack (pnpm)
         run: corepack enable
 
+      # Single root pnpm workspace: install once at the repo root, then drive each member with
+      # `pnpm --filter`. The lone root lockfile is the cache key + the frozen-lockfile gate.
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
           path: ~/.local/share/pnpm/store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('src/Services/acme-web/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install (frozen lockfile)
@@ -129,17 +128,18 @@ jobs:
 
       # Build first (api:generate -> OpenAPI spec + client, then react-router build).
       - name: Build
-        run: pnpm run build
+        run: pnpm --filter acme-web run build
 
       # Checks second.
       - name: Typecheck
-        run: pnpm run typecheck
+        run: pnpm --filter acme-web run typecheck
 
+      # Root Biome pass covers every member (web + scripts + tests/e2e) in one run.
       - name: Lint (Biome)
         run: pnpm run lint
 
       - name: Unit tests (+ coverage)
-        run: pnpm run test:coverage
+        run: pnpm --filter acme-web run test:coverage
 
       - name: Upload frontend coverage
         if: ${{ !cancelled() }}
@@ -155,9 +155,6 @@ jobs:
     name: E2E (Playwright via Aspire)
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: src/Services/acme-web
     steps:
       - uses: actions/checkout@v4
 
@@ -186,7 +183,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local/share/pnpm/store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('src/Services/acme-web/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install (frozen lockfile)
@@ -196,10 +193,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('src/Services/acme-web/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm --filter e2e exec playwright install --with-deps chromium
 
       # Boots the full Aspire stack (Docker is available on ubuntu-latest; the Aspire AppHost SDK is
       # restored from NuGet — no workload install). SSL_CERT_DIR makes the exported dev cert trusted
@@ -207,7 +204,7 @@ jobs:
       - name: Run E2E
         run: |
           export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
-          pnpm run test:e2e
+          pnpm --filter e2e run test:e2e
 
       - name: Upload Playwright report
         if: ${{ failure() }}
@@ -215,6 +212,6 @@ jobs:
         with:
           name: playwright-report
           path: |
-            src/Services/acme-web/playwright-report
-            src/Services/acme-web/test-results
+            tests/e2e/playwright-report
+            tests/e2e/test-results
           if-no-files-found: ignore

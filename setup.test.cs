@@ -98,6 +98,13 @@ void MakeFixture(string root)
         "src/Services/acme-web/app/routes/home.tsx",
         "export default function Home() { return null; } // acme-web route\n"
     );
+    // Root pnpm workspace: the web member path must track the frontend-folder rename; the generic
+    // `scripts` / `tests/e2e` members must be left alone (no token to rewrite).
+    Write(
+        root,
+        "pnpm-workspace.yaml",
+        "packages:\n  - \"src/Services/acme-web\"\n  - \"scripts\"\n  - \"tests/e2e\"\n"
+    );
     Write(root, "LICENSE", "Copyright (c) 2026 Bas Nijhuis\n");
     Write(root, "README.md", "# Awesome Opinionated Template\n");
 }
@@ -142,8 +149,7 @@ Console.WriteLine("A. full apply (in place)");
         "--web=contoso-web",
         "--api=contoso-api",
         "--db=shopdb",
-        "--title=Contoso Platform",
-        "--license-holder=Jane Doe"
+        "--title=Contoso Platform"
     );
     Check("exits 0", exit == 0);
     Check("Acme.slnx renamed to Contoso.slnx", !Has(f, "Acme.slnx") && Has(f, "Contoso.slnx"));
@@ -194,8 +200,17 @@ Console.WriteLine("A. full apply (in place)");
     );
     Check("frontend nested files moved", Has(f, "src/Services/contoso-web/app/routes/home.tsx"));
 
-    var lic = Read(f, "LICENSE");
-    Check("LICENSE holder rewritten", lic.Contains("Jane Doe") && !lic.Contains("Bas Nijhuis"));
+    var ws = Read(f, "pnpm-workspace.yaml");
+    Check(
+        "pnpm workspace web member path rewritten to the new web folder",
+        ws.Contains("src/Services/contoso-web") && !ws.Contains("acme-web")
+    );
+    Check(
+        "generic workspace members (scripts, tests/e2e) preserved",
+        ws.Contains("\"scripts\"") && ws.Contains("\"tests/e2e\"")
+    );
+
+    Check("LICENSE removed on success", !Has(f, "LICENSE"));
     Check("README title rewritten", Read(f, "README.md").Trim() == "# Contoso Platform");
 }
 
@@ -209,6 +224,7 @@ Console.WriteLine("B. dry run");
     Check("Acme.slnx untouched", Has(f, "Acme.slnx") && !Has(f, "Zzz.slnx"));
     Check("file contents untouched", Read(f, "src/Services/Acme.Api/Program.cs").Contains("Acme"));
     Check("reports planned edits", output.Contains("edit") && output.Contains("rename"));
+    Check("LICENSE preserved (dry run writes nothing)", Has(f, "LICENSE"));
     Check("announces dry run", output.Contains("Dry run complete"));
 }
 

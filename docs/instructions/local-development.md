@@ -15,12 +15,10 @@
    dotnet tool restore
    ```
 
-4. Install frontend dependencies (if not already):
+4. Install frontend dependencies (if not already) — once, at the repo root (the pnpm workspace installs all members):
 
    ```powershell
-   cd src/Services/acme-web
    pnpm install
-   cd ../..
    ```
 
 5. Start **Docker Desktop** and wait until the engine is healthy.
@@ -37,8 +35,7 @@
 - **Format/lint the frontend** with Biome before pushing ([ADR-0012](../adr/0012-biome-frontend-lint-format.md)):
 
   ```powershell
-  cd src/Services/acme-web
-  pnpm run format   # apply fixes (CI: pnpm run lint)
+  pnpm run format   # apply fixes at the repo root (CI: pnpm run lint)
   ```
 
 - **NuGet lock files** (`packages.lock.json`) are committed per project. After changing a dependency, run `dotnet restore` and commit the updated lock files.
@@ -97,8 +94,7 @@ Useful for UI-only work. The landing page will show "API not reachable" unless y
 3. Run:
 
    ```powershell
-   cd src/Services/acme-web
-   pnpm run dev
+   pnpm --filter acme-web run dev
    ```
 
 ## Run API standalone (no Aspire)
@@ -140,7 +136,7 @@ Design-time uses each context's `DbContextFactory` with a local placeholder conn
 | Certificate warnings | `dotnet dev-certs https --trust` |
 | Port in use | Stop previous AppHost; check for orphaned `dcp.exe` |
 | pnpm not found | `corepack enable` (or `corepack prepare pnpm@11.8.0 --activate`) |
-| Web build fails | `cd src/Services/acme-web && pnpm install` |
+| Web build fails | `pnpm install` (at the repo root), then `pnpm --filter acme-web run build` |
 
 ### Docker Desktop / WSL
 

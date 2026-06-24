@@ -26,8 +26,8 @@ First, check repo state:
 1. **Collect the inputs.** Ask the user for the namespace prefix and **where the project should be
    created** (a target directory, or in place); derive sensible defaults for the rest and confirm them
    in one go (analyzer prefix = upper-cased prefix; web = `<kebab>-web`; api = `<kebab>-api`; db =
-   `<kebab>`; title = the prefix; license holder = their git user name). Let them override any. Only
-   the prefix is strictly required.
+   `<kebab>`; title = the prefix). Let them override any. Only the prefix is strictly required.
+   (The template's `LICENSE` is removed on a successful run — the new project starts license-free.)
    - If they give a **target directory**, pass `--target=<dir>`: the script copies the template there
      (skipping `.git`/build artifacts), renames inside the copy, and leaves this template untouched.
      The rest of your work (Steps 1–7) then happens **in that target directory** — `cd` into it.
@@ -41,11 +41,11 @@ First, check repo state:
 
    dotnet run setup.cs -- --yes --prefix=Contoso --analyzer-prefix=CTSO \
      --web=contoso-web --api=contoso-api --db=contoso --title="Contoso Platform" \
-     --license-holder="Jane Doe" --target=../contoso
+     --target=../contoso
    ```
 
    Pass `--yes` so the script never blocks on a prompt (you've already gathered the answers). Add
-   `--license-holder=...` if it differs from the git user, and `--target=...` for a new location. Do
+   `--target=...` for a new location. Do
    **not** pass `--reinit-git` or `--remove-tooling` here — those are end-of-flow choices offered in
    Step 7 (note: a `--target` copy already initializes a fresh git repo by default).
 3. **Verify it took.** Confirm `Acme.slnx` is gone and a `<Prefix>.slnx` exists (in the target dir if
@@ -160,10 +160,10 @@ If the user **skipped** Step 1, do **not** do this — keep the examples.
 
 These are generated, never hand-edited — regenerate after the backend changes:
 
-- OpenAPI doc + typed clients: `cd src/Services/<web> && pnpm run api:generate`
+- OpenAPI doc + typed clients: `pnpm --filter <web> run api:generate`
   (rebuilds `<Prefix>.Api`, re-exports `openapi/v1.json`, regenerates the TS client under
   `app/lib/api/generated/`, and refreshes the NSwag C# client in `<Prefix>.ApiClient`).
-- If you changed routes/locales, run `pnpm run typecheck` and `pnpm run lint`.
+- If you changed routes/locales, run `pnpm --filter <web> run typecheck` and `pnpm --filter <web> run lint`.
 
 ## Step 6 — Rewrite the identity prose
 
@@ -172,7 +172,7 @@ The script swapped tokens; it did **not** rewrite meaning. Update:
 - `README.md` — the intro paragraph(s) and the "two trivial example modules" line should now
   describe the user's actual app and its real modules. Keep the stack table and ADR links intact.
 - `docs/instructions/project-structure.md` — the module list line(s) that named Greetings/Widgets.
-- `LICENSE` — confirm the copyright holder (the script can set this).
+- `LICENSE` — the script removes the template's license; add your own if the project needs one.
 
 Leave the ADRs themselves alone — they document *why* the architecture is the way it is and remain
 true regardless of domain.
@@ -180,8 +180,9 @@ true regardless of domain.
 ## Step 7 — Verify, then hand back
 
 - Backend: `dotnet build <Prefix>.slnx` then `dotnet test`.
-- Frontend: `cd src/Services/<web> && pnpm install && pnpm run build && pnpm test`.
-- Format: `dotnet csharpier .` (or the repo's format task) and `pnpm run format`.
+- Frontend: `pnpm install` once at the repo root, then
+  `pnpm --filter <web> run build && pnpm --filter <web> run test`.
+- Format: `dotnet csharpier .` (or the repo's format task) and `pnpm run format` (root script).
 - Optionally run the full app via Aspire to smoke-test (see `docs/instructions/local-development.md`).
 - Offer to commit, and — if the user wants a clean slate — to re-init git history
   (`dotnet run setup.cs -- --reinit-git`, or just `rm -rf .git && git init`).

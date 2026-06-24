@@ -9,7 +9,7 @@ const BASE_URL = `http://localhost:${WEB_PORT}`;
 // Playwright targets only the web origin (ADR-0003). The boot is heavy (Docker Postgres + a full
 // `react-router build`), hence the generous timeout.
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: ".",
   testMatch: "**/*.spec.ts",
   fullyParallel: false,
   // The happy-path spec drives a full (random, multi-step) round; give it well over the 30s default.
@@ -27,7 +27,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "dotnet run --project ../../Aspire/Acme.AppHost --no-launch-profile",
+    command: "dotnet run --project ../../src/Aspire/Acme.AppHost --no-launch-profile",
     url: BASE_URL,
     // A cold Aspire boot is heavy: Postgres container + pnpm install + a full `react-router build`
     // before the production server even starts. Give it room.

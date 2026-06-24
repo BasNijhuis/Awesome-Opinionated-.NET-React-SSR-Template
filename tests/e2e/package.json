@@ -1,0 +1,14 @@
+{
+  "name": "e2e",
+  "private": true,
+  "type": "module",
+  "description": "Playwright E2E suite — drives the web origin over HTTP/testids against the full Aspire stack (ADR-0003).",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.0",
+    "@types/node": "catalog:"
+  }
+}

@@ -7,6 +7,27 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["src/Services/acme-web/**"]
-  }
+    "includes": [
+      "src/Services/acme-web/**",
+      "!src/Services/acme-web/app/lib/api/generated",
+      "!src/Services/acme-web/.react-router",
+      "!src/Services/acme-web/**/*.css",
+      "scripts/**",
+      "tests/e2e/**"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "style": { "noNonNullAssertion": "off" },
+      "correctness": { "useExhaustiveDependencies": "warn" }
+    }
+  },
+  "javascript": { "formatter": { "quoteStyle": "double" } }
 }

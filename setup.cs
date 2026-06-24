@@ -59,7 +59,6 @@ if (flags.ContainsKey("help") || flags.ContainsKey("h"))
           --db=<name>                Database name — also the Aspire resource name (kebab; no underscores)
           --db-password=<value>      Local-dev Postgres password (local only)
           --title=<text>            Project display title (README H1)
-          --license-holder=<text>    Copyright holder for LICENSE
           --reinit-git               Wipe template git history and create a fresh initial commit
           --keep-tooling             Keep setup.cs / wrappers / setup skill files afterwards
           --dry-run                  Print planned changes, write nothing
@@ -162,14 +161,6 @@ var dbPassword = Ask(
     _ => null
 );
 var title = Ask("title", "Project display title (README H1)", prefix, _ => null);
-
-var gitUser = Run("git", "config user.name")?.Trim();
-var licenseHolder = Ask(
-    "license-holder",
-    "Copyright holder (LICENSE)",
-    string.IsNullOrWhiteSpace(gitUser) ? "Bas Nijhuis" : gitUser,
-    _ => null
-);
 
 bool AskYesNo(string flag, string label, bool @default)
 {
@@ -416,10 +407,6 @@ foreach (var rel in files)
     var original = Encoding.UTF8.GetString(bytes);
     var updated = ApplyReplacements(original);
 
-    // LICENSE holder is a one-off targeted replacement.
-    if (name == "LICENSE" && licenseHolder != "Bas Nijhuis")
-        updated = updated.Replace("Bas Nijhuis", licenseHolder);
-
     if (updated != original)
     {
         contentChanged++;
@@ -491,6 +478,23 @@ if (!dryRun)
 // ---------------------------------------------------------------------------------------
 // Post-actions.
 // ---------------------------------------------------------------------------------------
+
+// The template's LICENSE covers the template itself, not the project generated from it — drop
+// it so the new project starts license-free and its author can add their own. Done before the
+// optional git re-init below, so a fresh initial commit never captures the template's license.
+var licensePath = Path.Combine(repoRoot, "LICENSE");
+if (File.Exists(licensePath))
+{
+    if (dryRun)
+        Console.WriteLine("[dry-run] would remove LICENSE");
+    else
+    {
+        if (!(isGitRepo && Run("git", $"-C \"{repoRoot}\" rm -q -f LICENSE") is not null))
+            File.Delete(licensePath);
+        Console.WriteLine("removed LICENSE");
+    }
+}
+
 if (!dryRun && removeTooling)
 {
     foreach (
@@ -586,7 +590,7 @@ Console.WriteLine();
 Console.WriteLine("Next steps:");
 if (copying && !dryRun)
     Console.WriteLine($"  0. cd \"{repoRoot}\"");
-Console.WriteLine("  1. dotnet restore && (cd src/Services/" + web + " && pnpm install)");
+Console.WriteLine("  1. dotnet restore && pnpm install   (one root pnpm workspace install)");
 Console.WriteLine("  2. Run the AI setup skill to scaffold modules for your kind of app,");
 Console.WriteLine("     regenerate EF migrations + the API client, and rewrite the README.");
 Console.WriteLine("       Claude:  /setup-template      Codex/Gemini: see AGENTS.md / GEMINI.md");
