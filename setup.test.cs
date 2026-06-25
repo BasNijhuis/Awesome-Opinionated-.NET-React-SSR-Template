@@ -107,6 +107,34 @@ void MakeFixture(string root)
     );
     Write(root, "LICENSE", "Copyright (c) 2026 Bas Nijhuis\n");
     Write(root, "README.md", "# Awesome Opinionated Template\n");
+
+    // Agent-config files describe *the project* (title + build commands) and MUST be rebranded.
+    Write(
+        root,
+        "AGENTS.md",
+        "# AGENTS.md\n\nThis repo is the **Awesome Opinionated Template**.\n"
+            + "Frontend: `pnpm --filter acme-web run build`.\n"
+    );
+    Write(
+        root,
+        "GEMINI.md",
+        "# GEMINI.md\n\nThis repo is the **Awesome Opinionated Template**.\n"
+            + "Frontend: `pnpm --filter acme-web run build`.\n"
+    );
+    Write(
+        root,
+        ".github/copilot-instructions.md",
+        "# Copilot instructions\n\nThis repo is the **Awesome Opinionated Template**.\n"
+            + "Frontend: `pnpm --filter acme-web run build`.\n"
+    );
+    // The setup guide & skill files are instructions about renaming — they keep their illustrative
+    // Acme/<Prefix> example tokens and must NOT be rebranded.
+    Write(
+        root,
+        "docs/template-setup.md",
+        "Run `dotnet run setup.cs` from the repo root (where Acme.slnx lives); e.g. --prefix=Contoso.\n"
+    );
+    Write(root, ".claude/skills/setup-template/SKILL.md", "Read off the Acme.slnx filename.\n");
 }
 
 // --- run the real script non-interactively --------------------------------------------
@@ -360,6 +388,44 @@ Console.WriteLine("I. remove tooling");
     Check(
         "one blank line left between the surrounding jobs",
         ci.Contains("      - run: echo backend\n\n  frontend:")
+    );
+}
+
+// === J. Agent-config files rebranded; setup guide/skill kept verbatim =================
+Console.WriteLine("J. agent config rebranded, setup docs preserved");
+{
+    var f = NewDir("j");
+    MakeFixture(f);
+    var (exit, _) = RunSetup(
+        f,
+        "--yes",
+        "--prefix=Contoso",
+        "--web=contoso-web",
+        "--title=Contoso Platform"
+    );
+    Check("exits 0", exit == 0);
+
+    foreach (var agentFile in new[] { "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md" })
+    {
+        var text = Read(f, agentFile);
+        Check(
+            $"{agentFile}: title rebranded",
+            text.Contains("Contoso Platform") && !text.Contains("Awesome Opinionated Template")
+        );
+        Check(
+            $"{agentFile}: web resource rebranded",
+            text.Contains("contoso-web") && !text.Contains("acme-web")
+        );
+    }
+
+    // The setup guide & skill files keep their illustrative Acme/<Prefix> example tokens.
+    Check(
+        "docs/template-setup.md left verbatim (Acme examples intact)",
+        Read(f, "docs/template-setup.md").Contains("Acme.slnx")
+    );
+    Check(
+        "setup skill left verbatim (Acme examples intact)",
+        Read(f, ".claude/skills/setup-template/SKILL.md").Contains("Acme.slnx")
     );
 }
 

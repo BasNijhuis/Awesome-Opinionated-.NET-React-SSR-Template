@@ -301,6 +301,12 @@ string ApplyPathReplacements(string segment)
 // File set. Prefer git-tracked files (auto-excludes node_modules/bin/obj/build); otherwise
 // walk the tree with the same exclusions.
 // ---------------------------------------------------------------------------------------
+// Setup tooling & the setup guide: never rewrite (they keep their illustrative Acme/<Prefix> example
+// tokens intact — rebranding them would corrupt the instructions) and never rename. NOTE: AGENTS.md /
+// GEMINI.md / .github/copilot-instructions.md are deliberately NOT in this list — they are ongoing
+// agent-config files that describe *this project* (build/test commands, the title), so they must be
+// rebranded like any other source file. Trimming their now-stale "setting up" sections after the
+// rename is judgement work left to the AI skill, not this mechanical pass.
 var skipPrefixes = new[]
 {
     "setup.cs",
@@ -310,13 +316,10 @@ var skipPrefixes = new[]
     ".claude/",
     ".cursor/",
     ".github/prompts/",
-    ".github/copilot-instructions.md",
-    "AGENTS.md",
-    "GEMINI.md",
     "docs/template-setup.md",
     ".git/",
     "node_modules/",
-}; // setup tooling: never rewrite (keeps its example tokens intact) and never rename.
+};
 
 var binaryExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
