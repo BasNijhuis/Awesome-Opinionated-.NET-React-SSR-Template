@@ -18,7 +18,13 @@ internal sealed class CreateWidgetHandler(
         CancellationToken cancellationToken
     )
     {
-        var widget = Widget.Create(command);
+        var created = Widget.Create(command);
+        if (created.IsFailure)
+        {
+            return created.Errors; // propagate the domain rule failure
+        }
+
+        var widget = created.Value;
         repository.Add(widget);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -27,18 +33,16 @@ internal sealed class CreateWidgetHandler(
             cancellationToken
         );
 
-        return Result.Success(
-            new CreateWidgetResult
+        return new CreateWidgetResult
+        {
+            Id = widget.Id,
+            Widget = new WidgetDto
             {
                 Id = widget.Id,
-                Widget = new WidgetDto
-                {
-                    Id = widget.Id,
-                    Name = widget.Name,
-                    Quantity = widget.Quantity,
-                    CreatedAt = widget.CreatedAt,
-                },
-            }
-        );
+                Name = widget.Name,
+                Quantity = widget.Quantity,
+                CreatedAt = widget.CreatedAt,
+            },
+        };
     }
 }

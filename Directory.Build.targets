@@ -1,38 +1,64 @@
 <Project>
   <!--
-    Auto-wire the Domain immutability analyzers (#23, ADR-0017) into every domain-layer project, keyed
-    off the naming convention — any project ending in `.Domain` plus the `DomainAbstractions` building
-    block — so individual .csproj files don't repeat the analyzer reference + opt-in. The analyzer
-    project itself (`*.DomainAnalyzers`) and tests (`*.Tests`) don't match, so there's no self-reference.
+    Domain analyzers (ADR-0013, ADR-0017): one analyzer-assembly reference for every first-party
+    project, keyed off the naming convention so individual .csproj files don't repeat it. The analyzer
+    project itself (`*.DomainAnalyzers`) and the test projects (`*.Tests`) opt out — there's no
+    self-reference, and test code reads `Result<T>.Value` after fluent assertions / on statically-valid
+    fixtures, which ACME007 can't see as guards. Each rule below is gated by its own opt-in flag.
+  -->
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.DomainAnalyzers'))">
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)src/BuildingBlocks/Acme.DomainAnalyzers/Acme.DomainAnalyzers.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    >
+      <!-- The Aspire AppHost treats every ProjectReference as an app resource (ASPIRE004); this is an
+           analyzer, not a deployable project. Harmless metadata on non-Aspire projects. -->
+      <IsAspireProjectResource>false</IsAspireProjectResource>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!--
+    Immutability (#23, ADR-0017): the domain layer — any project ending in `.Domain` plus the
+    `DomainAbstractions` building block — must be immutable.
   -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Domain')) Or $(MSBuildProjectName.EndsWith('.DomainAbstractions'))">
     <EnforceImmutability>true</EnforceImmutability>
   </PropertyGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Domain')) Or $(MSBuildProjectName.EndsWith('.DomainAbstractions'))">
-    <ProjectReference
-      Include="$(MSBuildThisFileDirectory)src/BuildingBlocks/Acme.DomainAnalyzers/Acme.DomainAnalyzers.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"
-    />
     <CompilerVisibleProperty Include="EnforceImmutability" />
   </ItemGroup>
 
   <!--
-    The EF-entity-boundary analyzer (ACME006, #56) runs where EF mapping lives — any `.Infrastructure`
-    project — and forbids mapping a domain type as an EF entity (DbSet/Entity/HasOne/… of a `.Domain`
-    type); map an Application-layer `*Entity` instead. Same analyzer assembly, a separate opt-in flag.
+    EF-entity boundary (ACME006, #56): where EF mapping lives — any `.Infrastructure` project — a domain
+    type must not be mapped as an EF entity (DbSet/Entity/HasOne/… of a `.Domain` type); map an
+    Application-layer `*Entity` instead.
   -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
     <EnforceEfEntityBoundary>true</EnforceEfEntityBoundary>
   </PropertyGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
-    <ProjectReference
-      Include="$(MSBuildThisFileDirectory)src/BuildingBlocks/Acme.DomainAnalyzers/Acme.DomainAnalyzers.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"
-    />
     <CompilerVisibleProperty Include="EnforceEfEntityBoundary" />
+  </ItemGroup>
+
+  <!--
+    Result rules (ADR-0013): the whole codebase.
+      ACME007 (EnforceResultValueGuard)         reading `Result<T>.Value` is forbidden unless a success
+        check on the same result dominates the read (early-return/throw on IsFailure, or an
+        if (IsSuccess)/ternary success branch) — Value throws on a failed result.
+      ACME008 (EnforceResultImplicitConversion) in a `return`, prefer the implicit Result<T> conversion
+        (`return value;` / `return error;`) over wrapping the same value in Result.Success/Result.Failure.
+    Both apply everywhere a Result is consumed/produced, not just the command/query handlers.
+  -->
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.DomainAnalyzers'))">
+    <EnforceResultValueGuard>true</EnforceResultValueGuard>
+    <EnforceResultImplicitConversion>true</EnforceResultImplicitConversion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.DomainAnalyzers'))">
+    <CompilerVisibleProperty Include="EnforceResultValueGuard" />
+    <CompilerVisibleProperty Include="EnforceResultImplicitConversion" />
   </ItemGroup>
 </Project>

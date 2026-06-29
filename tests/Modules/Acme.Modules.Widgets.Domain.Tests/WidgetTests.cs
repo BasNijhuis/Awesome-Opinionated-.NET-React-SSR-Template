@@ -10,9 +10,11 @@ public sealed class WidgetTests
     public void Create_sets_a_trimmed_name_quantity_a_fresh_id_and_a_timestamp()
     {
         // Act
-        var widget = Widget.Create(new CreateWidgetSpec("  Gadget  ", 7));
+        var result = Widget.Create(new CreateWidgetSpec("  Gadget  ", 7));
 
         // Assert
+        result.IsSuccess.Should().BeTrue();
+        var widget = result.Value;
         widget.Name.Should().Be("Gadget");
         widget.Quantity.Should().Be(7);
         widget.Id.Value.Should().NotBe(Guid.Empty);
@@ -23,10 +25,12 @@ public sealed class WidgetTests
     public void Create_rejects_a_blank_name()
     {
         // Act
-        var act = () => Widget.Create(new CreateWidgetSpec("   ", 1));
+        var result = Widget.Create(new CreateWidgetSpec("   ", 1));
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
+        // Assert — an expected, recoverable failure (Validation), not an exception
+        result.IsFailure.Should().BeTrue();
+        result.Error.Category.Should().Be(ErrorCategory.Validation);
+        result.Error.Code.Should().Be("Name");
     }
 
     [Fact]
@@ -49,7 +53,7 @@ public sealed class WidgetTests
     public void AdjustQuantity_returns_a_new_instance_and_leaves_the_original_unchanged()
     {
         // Arrange
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5));
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5)).Value;
 
         // Act
         var result = widget.AdjustQuantity(3);
@@ -65,7 +69,7 @@ public sealed class WidgetTests
     public void AdjustQuantity_raises_a_WidgetQuantityAdjusted_event_with_the_before_and_after()
     {
         // Arrange
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5));
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5)).Value;
 
         // Act
         var adjusted = widget.AdjustQuantity(-2).Value;
@@ -82,7 +86,7 @@ public sealed class WidgetTests
     public void AdjustQuantity_rejects_an_adjustment_that_would_go_negative()
     {
         // Arrange
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 1));
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 1)).Value;
 
         // Act
         var result = widget.AdjustQuantity(-5);

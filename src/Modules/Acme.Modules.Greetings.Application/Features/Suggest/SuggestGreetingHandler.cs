@@ -16,7 +16,7 @@ internal sealed class SuggestGreetingHandler(IGreetingSuggestionProvider provide
         SuggestGreetingQuery query,
         CancellationToken cancellationToken
     ) =>
-        Task.FromResult(
-            Result.Success(new GreetingSuggestionDto { Suggestion = provider.Suggest() })
+        Task.FromResult<Result<GreetingSuggestionDto>>(
+            new GreetingSuggestionDto { Suggestion = provider.Suggest() }
         );
 }

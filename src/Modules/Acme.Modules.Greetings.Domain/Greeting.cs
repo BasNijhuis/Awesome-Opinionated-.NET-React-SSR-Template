@@ -22,9 +22,18 @@ public sealed record Greeting : AggregateRoot
         CreatedAt = createdAt;
     }
 
-    public static Greeting Create(ICreateGreetingSpec spec)
+    /// <summary>
+    /// Creates a greeting from <paramref name="spec"/>. A blank message is an expected, recoverable
+    /// failure (a <see cref="ErrorCategory.Validation"/>) returned as a <see cref="Result{T}"/> rather
+    /// than thrown; the error code is the field name so it slots into the API's validation field map.
+    /// </summary>
+    public static Result<Greeting> Create(ICreateGreetingSpec spec)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(spec.Message);
+        if (string.IsNullOrWhiteSpace(spec.Message))
+        {
+            return Error.Validation(nameof(spec.Message), "Message is required.");
+        }
+
         return new Greeting(GreetingId.New(), spec.Message.Trim(), DateTimeOffset.UtcNow);
     }
 

@@ -30,6 +30,6 @@ internal sealed class ListWidgetsHandler(IWidgetsReadContext read)
             cancellationToken
         );
 
-        return Result.Success<IReadOnlyList<WidgetDto>>(rows);
+        return rows;
     }
 }

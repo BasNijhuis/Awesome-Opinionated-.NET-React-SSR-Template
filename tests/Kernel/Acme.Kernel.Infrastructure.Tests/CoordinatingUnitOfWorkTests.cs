@@ -40,8 +40,8 @@ public sealed class CoordinatingUnitOfWorkTests : IAsyncLifetime
     {
         // Arrange — a greeting (Greetings schema) and a widget (Widgets schema) staged across the two
         // write contexts under one unit of work.
-        var greeting = Greeting.Create(new CreateGreetingSpec("hello"));
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 7));
+        var greeting = Greeting.Create(new CreateGreetingSpec("hello")).Value;
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 7)).Value;
 
         await using (var connection = CreateConnection())
         await using (var greetingsDb = CreateGreetingsContext(connection))
@@ -85,7 +85,7 @@ public sealed class CoordinatingUnitOfWorkTests : IAsyncLifetime
     {
         // Arrange — a valid greeting staged in the Greetings context, plus a participant that throws on
         // save. The failure must roll back the greeting write too.
-        var greeting = Greeting.Create(new CreateGreetingSpec("rollback"));
+        var greeting = Greeting.Create(new CreateGreetingSpec("rollback")).Value;
 
         await using (var connection = CreateConnection())
         await using (var greetingsDb = CreateGreetingsContext(connection))

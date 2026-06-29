@@ -29,6 +29,6 @@ internal sealed class ListGreetingsHandler(IGreetingsReadContext read)
             cancellationToken
         );
 
-        return Result.Success<IReadOnlyList<GreetingDto>>(rows);
+        return rows;
     }
 }

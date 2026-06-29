@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Acme.DomainAbstractions;
 
 namespace Acme.DomainAbstractions.Tests;
@@ -54,7 +55,7 @@ public sealed class ResultTests
     [Fact]
     public void Validation_failure_keeps_all_field_errors()
     {
-        Error[] errors =
+        ImmutableArray<Error> errors =
         [
             Error.Validation("hostName", "Required."),
             Error.Validation("persona", "Invalid."),

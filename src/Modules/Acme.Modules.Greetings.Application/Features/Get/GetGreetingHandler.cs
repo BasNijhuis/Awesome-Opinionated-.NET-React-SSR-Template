@@ -29,8 +29,6 @@ internal sealed class GetGreetingHandler(IGreetingsReadContext read)
             cancellationToken
         );
 
-        return dto is null
-            ? Result<GreetingDto>.Failure(GreetingErrors.NotFound(query.Id))
-            : Result.Success(dto);
+        return dto is null ? GreetingErrors.NotFound(query.Id) : dto;
     }
 }
