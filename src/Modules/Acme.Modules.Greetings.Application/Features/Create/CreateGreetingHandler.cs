@@ -18,7 +18,13 @@ internal sealed class CreateGreetingHandler(
         CancellationToken cancellationToken
     )
     {
-        var greeting = Greeting.Create(command);
+        var created = Greeting.Create(command);
+        if (created.IsFailure)
+        {
+            return created.Errors; // propagate the domain rule failure
+        }
+
+        var greeting = created.Value;
         repository.Add(greeting);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -27,17 +33,15 @@ internal sealed class CreateGreetingHandler(
             cancellationToken
         );
 
-        return Result.Success(
-            new CreateGreetingResult
+        return new CreateGreetingResult
+        {
+            Id = greeting.Id,
+            Greeting = new GreetingDto
             {
                 Id = greeting.Id,
-                Greeting = new GreetingDto
-                {
-                    Id = greeting.Id,
-                    Message = greeting.Message,
-                    CreatedAt = greeting.CreatedAt,
-                },
-            }
-        );
+                Message = greeting.Message,
+                CreatedAt = greeting.CreatedAt,
+            },
+        };
     }
 }

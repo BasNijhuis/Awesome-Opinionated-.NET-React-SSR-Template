@@ -17,13 +17,20 @@ internal sealed class WidgetQuantityAdjustedHandler(IGreetingRepository reposito
 {
     public Task HandleAsync(WidgetQuantityAdjusted domainEvent, CancellationToken cancellationToken)
     {
-        var greeting = Greeting.Create(
+        var created = Greeting.Create(
             new WidgetAdjustmentAnnouncement(
                 $"Widget '{domainEvent.Name}' quantity changed from {domainEvent.OldQuantity} "
                     + $"to {domainEvent.NewQuantity}."
             )
         );
-        repository.Add(greeting);
+        // The announcement is built from the event and is always non-empty, so Create succeeds; guard
+        // defensively rather than dereference a failed result — a missing announcement must never break
+        // the widget transaction this reaction runs inside.
+        if (created.IsSuccess)
+        {
+            repository.Add(created.Value);
+        }
+
         return Task.CompletedTask;
     }
 

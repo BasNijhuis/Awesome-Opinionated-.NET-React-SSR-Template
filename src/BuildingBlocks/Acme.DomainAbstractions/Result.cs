@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace Acme.DomainAbstractions;
 
 /// <summary>
@@ -7,14 +9,14 @@ namespace Acme.DomainAbstractions;
 /// </summary>
 public record Result
 {
-    private protected Result(bool isSuccess, IReadOnlyList<Error> errors)
+    private protected Result(bool isSuccess, ImmutableArray<Error> errors)
     {
-        if (isSuccess && errors.Count > 0)
+        if (isSuccess && errors.Length > 0)
         {
             throw new InvalidOperationException("A successful result cannot carry errors.");
         }
 
-        if (!isSuccess && errors.Count == 0)
+        if (!isSuccess && errors.Length == 0)
         {
             throw new InvalidOperationException("A failed result must carry at least one error.");
         }
@@ -27,7 +29,7 @@ public record Result
 
     public bool IsFailure => !IsSuccess;
 
-    public IReadOnlyList<Error> Errors { get; }
+    public ImmutableArray<Error> Errors { get; }
 
     /// <summary>The first error. Only valid on a failed result.</summary>
     public Error Error =>
@@ -39,13 +41,13 @@ public record Result
 
     public static Result Failure(Error error) => new(false, [error]);
 
-    public static Result Failure(IReadOnlyList<Error> errors) => new(false, errors);
+    public static Result Failure(ImmutableArray<Error> errors) => new(false, errors);
 
     public static Result<T> Success<T>(T value) => Result<T>.Success(value);
 
     public static Result<T> Failure<T>(Error error) => Result<T>.Failure(error);
 
-    public static Result<T> Failure<T>(IReadOnlyList<Error> errors) => Result<T>.Failure(errors);
+    public static Result<T> Failure<T>(ImmutableArray<Error> errors) => Result<T>.Failure(errors);
 }
 
 /// <summary>A <see cref="Result"/> whose success path carries a <typeparamref name="T"/> value.</summary>
@@ -53,7 +55,7 @@ public sealed record Result<T> : Result
 {
     private readonly T _value;
 
-    private Result(bool isSuccess, T value, IReadOnlyList<Error> errors)
+    private Result(bool isSuccess, T value, ImmutableArray<Error> errors)
         : base(isSuccess, errors)
     {
         _value = value;
@@ -69,6 +71,21 @@ public sealed record Result<T> : Result
 
     public static new Result<T> Failure(Error error) => new(false, default!, [error]);
 
-    public static new Result<T> Failure(IReadOnlyList<Error> errors) =>
+    public static new Result<T> Failure(ImmutableArray<Error> errors) =>
         new(false, default!, errors);
+
+    /// <summary>Lifts a value into a successful result, so a handler can <c>return value;</c>.</summary>
+    public static implicit operator Result<T>(T value) => Success(value);
+
+    /// <summary>Lifts an error into a failed result, so a handler can <c>return someError;</c>.</summary>
+    public static implicit operator Result<T>(Error error) => Failure(error);
+
+    /// <summary>
+    /// Lifts a set of errors into a failed result, so a handler can propagate a failed result's
+    /// <see cref="Result.Errors"/> with <c>return other.Errors;</c>. Typed as
+    /// <see cref="ImmutableArray{T}"/> (the shape of <see cref="Result.Errors"/>) because C# forbids
+    /// user-defined conversions from an interface (CS0552) and a mutable array is banned in the domain
+    /// (ACME003).
+    /// </summary>
+    public static implicit operator Result<T>(ImmutableArray<Error> errors) => Failure(errors);
 }

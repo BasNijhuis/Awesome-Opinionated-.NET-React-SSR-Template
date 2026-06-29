@@ -25,9 +25,18 @@ public sealed record Widget : AggregateRoot
         CreatedAt = createdAt;
     }
 
-    public static Widget Create(ICreateWidgetSpec spec)
+    /// <summary>
+    /// Creates a widget from <paramref name="spec"/>. A blank name is an expected, recoverable failure
+    /// (a <see cref="ErrorCategory.Validation"/>) returned as a <see cref="Result{T}"/> rather than
+    /// thrown; the error code is the field name so it slots into the API's validation field map.
+    /// </summary>
+    public static Result<Widget> Create(ICreateWidgetSpec spec)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(spec.Name);
+        if (string.IsNullOrWhiteSpace(spec.Name))
+        {
+            return Error.Validation(nameof(spec.Name), "Name is required.");
+        }
+
         return new Widget(WidgetId.New(), spec.Name.Trim(), spec.Quantity, DateTimeOffset.UtcNow);
     }
 
@@ -45,19 +54,14 @@ public sealed record Widget : AggregateRoot
         var newQuantity = Quantity + delta;
         if (newQuantity < 0)
         {
-            return Result<Widget>.Failure(
-                Error.Conflict(
-                    "widget_quantity_negative",
-                    $"Adjusting '{Name}' by {delta} would make its quantity negative ({newQuantity})."
-                )
+            return Error.Conflict(
+                "widget_quantity_negative",
+                $"Adjusting '{Name}' by {delta} would make its quantity negative ({newQuantity})."
             );
         }
 
-        var adjusted = this with { Quantity = newQuantity };
-        return Result.Success(
-            adjusted.RaiseEvent<Widget>(
-                new WidgetQuantityAdjusted(Id.Value, Name, Quantity, newQuantity)
-            )
+        return (this with { Quantity = newQuantity }).RaiseEvent<Widget>(
+            new WidgetQuantityAdjusted(Id.Value, Name, Quantity, newQuantity)
         );
     }
 }

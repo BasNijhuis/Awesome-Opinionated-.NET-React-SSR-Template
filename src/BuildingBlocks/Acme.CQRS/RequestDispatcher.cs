@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Immutable;
 using System.Reflection;
 using Acme.CQRS.Abstractions;
 using Acme.DomainAbstractions;
@@ -33,10 +34,10 @@ public sealed class RequestDispatcher(
         var requestType = request.GetType();
 
         var validationErrors = Validate(request, requestType);
-        if (validationErrors.Count > 0)
+        if (validationErrors.Length > 0)
         {
             LogFailure(requestType, validationErrors);
-            return Result<TResult>.Failure(validationErrors);
+            return validationErrors;
         }
 
         var handlerType = handlerOpenType.MakeGenericType(requestType, typeof(TResult));
@@ -75,14 +76,14 @@ public sealed class RequestDispatcher(
 
     // Centralized observability for expected (Result) failures across every command/query. Logged at
     // Warning, not Error — these are recoverable control-flow failures (ADR-0013), not exceptions.
-    private void LogFailure(Type requestType, IReadOnlyList<Error> errors) =>
+    private void LogFailure(Type requestType, ImmutableArray<Error> errors) =>
         logger.LogWarning(
             "{Request} failed: {Errors}",
             requestType.Name,
             string.Join("; ", errors.Select(e => $"{e.Category}/{e.Code}: {e.Message}"))
         );
 
-    private List<Error> Validate(object request, Type requestType)
+    private ImmutableArray<Error> Validate(object request, Type requestType)
     {
         var validatorType = typeof(IRequestValidator<>).MakeGenericType(requestType);
         var validators = (IEnumerable)serviceProvider.GetServices(validatorType);
@@ -111,6 +112,6 @@ public sealed class RequestDispatcher(
             errors.AddRange(result.Errors.Select(e => Error.Validation(e.PropertyName, e.Message)));
         }
 
-        return errors;
+        return [.. errors];
     }
 }

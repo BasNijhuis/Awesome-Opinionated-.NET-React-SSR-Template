@@ -31,13 +31,13 @@ internal sealed class AdjustWidgetQuantityHandler(
         var widget = await repository.GetByIdAsync(command.Id, cancellationToken);
         if (widget is null)
         {
-            return Result<WidgetDto>.Failure(WidgetErrors.NotFound(command.Id));
+            return WidgetErrors.NotFound(command.Id);
         }
 
         var adjusted = widget.AdjustQuantity(command.Delta);
         if (adjusted.IsFailure)
         {
-            return Result<WidgetDto>.Failure(adjusted.Errors); // propagate the domain rule failure
+            return adjusted.Errors; // propagate the domain rule failure
         }
 
         var updated = adjusted.Value;
@@ -52,14 +52,12 @@ internal sealed class AdjustWidgetQuantityHandler(
             cancellationToken
         );
 
-        return Result.Success(
-            new WidgetDto
-            {
-                Id = updated.Id,
-                Name = updated.Name,
-                Quantity = updated.Quantity,
-                CreatedAt = updated.CreatedAt,
-            }
-        );
+        return new WidgetDto
+        {
+            Id = updated.Id,
+            Name = updated.Name,
+            Quantity = updated.Quantity,
+            CreatedAt = updated.CreatedAt,
+        };
     }
 }

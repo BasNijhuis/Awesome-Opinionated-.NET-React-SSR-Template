@@ -30,8 +30,6 @@ internal sealed class GetWidgetHandler(IWidgetsReadContext read)
             cancellationToken
         );
 
-        return dto is null
-            ? Result<WidgetDto>.Failure(WidgetErrors.NotFound(query.Id))
-            : Result.Success(dto);
+        return dto is null ? WidgetErrors.NotFound(query.Id) : dto;
     }
 }
