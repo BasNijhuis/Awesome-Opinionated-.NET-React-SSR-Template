@@ -3,7 +3,7 @@
 ## Stack
 
 - **React Router Framework 8** — SSR, file-based routes
-- **pnpm 11.8** — package manager
+- **pnpm 11.9** — package manager
 - **Tailwind CSS 4** — styling (from template)
 
 ## Commands
