@@ -38,7 +38,7 @@ Shared cross-cutting defaults live in `Acme.ServiceDefaults` (OpenTelemetry, hea
 
 - Requires **Docker Desktop** (or compatible runtime) for Postgres locally.
 - Developers must understand AppHost is the entry point, not individual projects.
-- Aspire package versions must stay aligned (currently **13.4.5**).
+- Aspire package versions must stay aligned.
 
 ### References
 

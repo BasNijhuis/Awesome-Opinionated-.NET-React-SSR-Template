@@ -57,7 +57,7 @@ dotnet dev-certs https --trust
 Optional (if Aspire CLI installed):
 
 ```powershell
-dotnet tool install -g aspire.cli --version 13.4.5
+dotnet tool install -g aspire.cli
 aspire certs trust
 ```
 

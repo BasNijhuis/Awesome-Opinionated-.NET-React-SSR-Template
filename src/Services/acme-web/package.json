@@ -16,8 +16,8 @@
     "prepare": "pnpm run api:generate"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.2.8",
-    "@fontsource/cinzel": "^5.2.8",
+    "@fontsource-variable/inter": "5.2.8",
+    "@fontsource/cinzel": "5.2.8",
     "@microsoft/signalr": "10.0.0",
     "@react-router/express": "8.0.1",
     "@react-router/node": "8.0.1",
@@ -25,20 +25,20 @@
     "compression": "1.8.1",
     "express": "5.2.1",
     "http-proxy-middleware": "4.1.1",
-    "i18next": "^26.3.1",
-    "isbot": "5.1.43",
+    "i18next": "26.3.3",
+    "isbot": "5.1.44",
     "morgan": "1.11.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "react-i18next": "^17.0.8",
+    "react-i18next": "17.0.8",
     "react-router": "8.0.1",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@hey-api/openapi-ts": "0.98.2",
+    "@hey-api/openapi-ts": "0.99.0",
     "@react-router/dev": "8.0.1",
-    "@tailwindcss/vite": "4.3.1",
+    "@tailwindcss/vite": "4.3.2",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
@@ -47,9 +47,9 @@
     "@types/react-dom": "19.2.3",
     "@vitest/coverage-v8": "4.1.9",
     "jsdom": "29.1.1",
-    "tailwindcss": "4.3.1",
+    "tailwindcss": "4.3.2",
     "typescript": "6.0.3",
-    "vite": "8.0.16",
+    "vite": "8.1.0",
     "vitest": "4.1.9"
   }
 }
