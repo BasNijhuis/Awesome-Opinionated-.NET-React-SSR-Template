@@ -135,7 +135,7 @@ Design-time uses each context's `DbContextFactory` with a local placeholder conn
 | Docker unhealthy / WSL error | Enable **SVM Mode** (AMD-V) in UEFI BIOS, reboot, then start Docker Desktop. Windows WSL/VM Platform must stay enabled. See [Docker troubleshooting](#docker-desktop--wsl) below |
 | Certificate warnings | `dotnet dev-certs https --trust` |
 | Port in use | Stop previous AppHost; check for orphaned `dcp.exe` |
-| pnpm not found | `corepack enable` (or `corepack prepare pnpm@11.8.0 --activate`) |
+| pnpm not found | `corepack enable` (or `corepack prepare pnpm@11.9.0 --activate`) |
 | Web build fails | `pnpm install` (at the repo root), then `pnpm --filter acme-web run build` |
 
 ### Docker Desktop / WSL
