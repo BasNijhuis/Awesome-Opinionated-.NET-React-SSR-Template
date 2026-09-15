@@ -43,7 +43,7 @@ whole stack end to end. Use them as the recipe for your own capabilities, then d
 
 - **.NET 10 SDK**
 - **Docker Desktop** (for the PostgreSQL container)
-- **Node.js 22+** and **pnpm 11+** (`corepack enable`)
+- **Node.js 24+** and **pnpm 12+** (`corepack enable`)
 - **Aspire CLI** (`dotnet tool install -g aspire.cli`)
 
 ### Run the whole stack

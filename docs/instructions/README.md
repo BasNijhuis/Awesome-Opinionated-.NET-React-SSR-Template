@@ -38,8 +38,8 @@ dotnet dev-certs https --trust
 |------|---------|-------|
 | .NET SDK | 10.x | `dotnet --version` |
 | Docker Desktop | latest | Required for Postgres |
-| Node.js | 22+ | Frontend |
-| pnpm | 11+ | `corepack enable` |
+| Node.js | 24+ | Frontend |
+| pnpm | 12+ | `corepack enable` |
 | Aspire CLI (optional) | - | `dotnet tool install -g aspire.cli` |
 
 ## Related
