@@ -8,11 +8,11 @@ public sealed class UnitOfWorkDomainEventTests
 {
     private sealed record ThingHappened : IDomainEvent;
 
-    private sealed record TestAggregate : AggregateRoot
+    private sealed record TestAggregate : AggregateRoot<TestAggregate, Guid>
     {
-        public TestAggregate Do() => RaiseEvent<TestAggregate>(new ThingHappened());
+        public override Guid Id { get; } = Guid.CreateVersion7();
 
-        public override bool HasSameIdentity(AggregateRoot other) => ReferenceEquals(this, other);
+        public TestAggregate Do() => RaiseEvent(new ThingHappened());
     }
 
     private sealed class SpyDispatcher : IDomainEventDispatcher

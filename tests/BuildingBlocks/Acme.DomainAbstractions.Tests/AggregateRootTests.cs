@@ -6,13 +6,15 @@ public sealed class AggregateRootTests
 {
     private sealed record ThingHappened(int Value) : IDomainEvent;
 
-    private sealed record TestAggregate : AggregateRoot
+    private sealed record TestAggregate : AggregateRoot<TestAggregate, Guid>
     {
+        // Get-only and assigned once: the record copy constructor copies the backing field, so a
+        // 'with' clone (and a cleared copy) carries the same identity forward.
+        public override Guid Id { get; } = Guid.CreateVersion7();
+
         // A transition is functional: it returns a new instance carrying the appended event,
         // with prior pending events carried forward via the immutable outbox.
-        public TestAggregate Do(int value) => RaiseEvent<TestAggregate>(new ThingHappened(value));
-
-        public override bool HasSameIdentity(AggregateRoot other) => ReferenceEquals(this, other);
+        public TestAggregate Do(int value) => RaiseEvent(new ThingHappened(value));
     }
 
     [Fact]
@@ -55,6 +57,32 @@ public sealed class AggregateRootTests
         // Assert
         cleared.DomainEvents.Should().BeEmpty();
         aggregate.DomainEvents.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void A_transitioned_instance_has_the_same_identity()
+    {
+        // Arrange — records compare by value, so a transition yields a value-distinct instance; the
+        // unit of work must still recognise it as the same aggregate.
+        var aggregate = new TestAggregate();
+
+        // Act
+        var next = aggregate.Do(1);
+
+        // Assert
+        next.Should().NotBe(aggregate);
+        aggregate.HasSameIdentity(next).Should().BeTrue();
+    }
+
+    [Fact]
+    public void A_different_aggregate_has_a_different_identity()
+    {
+        // Arrange / Act — two aggregates, each with its own id
+        var aggregate = new TestAggregate();
+        var other = new TestAggregate();
+
+        // Assert
+        aggregate.HasSameIdentity(other).Should().BeFalse();
     }
 
     [Fact]
