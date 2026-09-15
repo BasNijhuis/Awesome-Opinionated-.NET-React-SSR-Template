@@ -108,11 +108,11 @@ dotnet run --project tests/Acme.Modules.Greetings.Domain.Tests
 
 | Item | Package / setting |
 |------|-------------------|
-| Framework | xUnit v3 (`xunit.v3.mtp-v2` 3.2.2) |
+| Framework | xUnit v3 (`xunit.v3.mtp-v2` 4.0.1) |
 | Analyzers | `xunit.analyzers` (transitive via `xunit.v3.mtp-v2` — no explicit reference needed) |
 | Runner | Microsoft Testing Platform v2 (CLI via `global.json`) |
 | IDE discovery | `Microsoft.NET.Test.Sdk` + `xunit.runner.visualstudio` (via `tests/TestProjects.props`) |
-| API integration | `Microsoft.AspNetCore.Mvc.Testing` 10.0.9 + generated `AcmeApiClient` |
+| API integration | `Microsoft.AspNetCore.Mvc.Testing` 10.0.12 + generated `AcmeApiClient` |
 
 Package versions are managed centrally in `Directory.Packages.props` at the repo root.
 

@@ -50,14 +50,19 @@ jobs:
         run: dotnet test --project tests/Acme.Architecture.Tests/Acme.Architecture.Tests.csproj --no-build
 
       # Every other test project runs WITH coverage (Docker is available for Testcontainers). Each
-      # writes a cobertura report into its own bin/**/TestResults.
+      # writes a cobertura report into its own bin/**/TestResults. --results-directory is required to
+      # keep that per-project: since Microsoft.Testing.Extensions.CodeCoverage 18.11.x, a bare
+      # --coverage-output resolves against the *working directory*, so every project would write one
+      # $PWD/TestResults file and silently overwrite the others (the upload glob still matches, so the
+      # job stays green while the artifact collapses to the last project's report).
       - name: Test — everything else (+ coverage)
         run: |
           set -euo pipefail
           mapfile -t projects < <(grep -oE 'tests/[^"]+\.Tests\.csproj' Acme.slnx | grep -v 'Architecture\.Tests')
           for project in "${projects[@]}"; do
             echo "::group::test $project"
-            dotnet test --project "$project" --no-build -- \
+            dotnet test --project "$project" --no-build \
+              --results-directory "$(dirname "$project")/bin/Debug/net10.0/TestResults" -- \
               --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
             echo "::endgroup::"
           done

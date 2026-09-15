@@ -18,6 +18,10 @@ node_modules/
 src/Services/acme-web/build/
 src/Services/acme-web/.react-router/
 
+# MTP coverage output. A bare `dotnet test --coverage` resolves the report against the working
+# directory, so running from the repo root drops a TestResults/ here (CI pins it per project).
+TestResults/
+
 # Playwright (tests/e2e)
 playwright-report/
 test-results/
