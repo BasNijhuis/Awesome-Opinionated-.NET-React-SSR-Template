@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Acme.Api;
 using Acme.Api.Realtime;
+using Acme.CQRS;
 using Acme.Http;
 using Acme.Kernel.Application;
 using Acme.Kernel.Domain.Services;
@@ -39,6 +40,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.SerializerOptions.Converters.Add(new UtcDateTimeOffsetConverter());
 });
+
+// Every module has registered by now, so any handler without a dispatch adapter is a wiring
+// mistake — fail at boot rather than silently skipping it at runtime (ADR-0019).
+builder.Services.ValidateCqrsRegistrations();
 
 var app = builder.Build();
 

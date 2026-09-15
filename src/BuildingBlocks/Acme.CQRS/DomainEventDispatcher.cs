@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Acme.CQRS;
 
 /// <summary>
-/// Resolves and invokes every <see cref="IDomainEventHandler{TEvent}"/> registered for each event's
-/// concrete type, in order. Runs within the caller's scope/transaction; a handler that throws
-/// propagates so the transaction rolls back.
+/// Invokes every <see cref="IDomainEventHandler{TEvent}"/> registered for each event's concrete type,
+/// in order, through the typed adapter registered under that type. Runs within the caller's
+/// scope/transaction; a handler that throws propagates so the transaction rolls back.
 /// </summary>
 public sealed class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEventDispatcher
 {
@@ -18,25 +18,15 @@ public sealed class DomainEventDispatcher(IServiceProvider serviceProvider) : ID
     {
         foreach (var domainEvent in domainEvents)
         {
-            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
-            var handlers = serviceProvider.GetServices(handlerType);
+            // No adapter means no handler is registered for this event — a normal, silent no-op.
+            var adapter = serviceProvider.GetKeyedService<IDomainEventHandlerAdapter>(
+                domainEvent.GetType()
+            );
 
-            foreach (var handler in handlers)
+            if (adapter is not null)
             {
-                await InvokeAsync(handler!, domainEvent, cancellationToken);
+                await adapter.HandleAllAsync(domainEvent, cancellationToken);
             }
         }
-    }
-
-    private static Task InvokeAsync(
-        object handler,
-        IDomainEvent domainEvent,
-        CancellationToken cancellationToken
-    )
-    {
-        var method = handler
-            .GetType()
-            .GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync))!;
-        return (Task)method.Invoke(handler, [domainEvent, cancellationToken])!;
     }
 }
