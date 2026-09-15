@@ -58,7 +58,17 @@ builder.Services.AddCqrsHandlersFrom(GreetingsApplicationMarker.Assembly);
 builder.Services.AddCqrsHandlersFrom(WidgetsApplicationMarker.Assembly);
 ```
 
-`AddCqrs(...)` registers `IRequestDispatcher` and auto-discovers `ICommandHandler<,>`, `IQueryHandler<,>`, and `IRequestValidator<>` implementations in the given assembly.
+`AddCqrs(...)` registers `IRequestDispatcher` and auto-discovers `ICommandHandler<,>`, `IQueryHandler<,>`, `IRequestValidator<>`, and `IDomainEventHandler<>` implementations in the given assembly. For each handler it also registers the **dispatch adapter** that lets the dispatcher invoke it without reflection ([ADR-0019](../adr/0019-reflection-free-dispatch.md)).
+
+**Registering a single handler outside a scan** — use the typed helpers, not a bare `AddScoped`. A handler registered without its adapter compiles but is invisible to the dispatcher:
+
+```csharp
+services.AddQueryHandler<GetGreetingHandler, GetGreetingQuery, GreetingResponse>();
+services.AddCommandHandler<CreateGreetingHandler, CreateGreetingCommand, GreetingResponse>();
+services.AddDomainEventHandler<GreetingCreatedHandler, GreetingCreated>();
+```
+
+The API host calls `builder.Services.ValidateCqrsRegistrations()` after every module has registered, which fails at boot if any handler was registered without its adapter — a domain-event handler in that state would otherwise be skipped silently.
 
 ## API endpoints, OpenAPI & the generated client
 

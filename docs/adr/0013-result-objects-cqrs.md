@@ -3,6 +3,11 @@
 - **Status:** Accepted
 - **Date:** 2026-06-21
 - **Supersedes:** [ADR-0008](./0008-custom-request-dispatch.md)
+- **Amended by:** [ADR-0019](./0019-reflection-free-dispatch.md)
+
+> **Amended:** the dispatch mechanism changed in [ADR-0019](./0019-reflection-free-dispatch.md) — handlers and validators are now invoked through
+> closed-generic adapters resolved by keyed DI, so no reflection remains on the dispatch path.
+> Everything else below still holds.
 
 ## Context
 
@@ -68,12 +73,13 @@ Endpoints translate a `Result` to `TypedResults` by category — `NotFound` → 
 ### Negative
 
 - More plumbing: handlers thread `Result` through and propagate `outcome.Errors`.
-- The dispatcher still uses reflection to invoke `HandleAsync` (unchanged from ADR-0008).
+- ~~The dispatcher still uses reflection to invoke `HandleAsync` (unchanged from ADR-0008).~~ Removed in [ADR-0019](./0019-reflection-free-dispatch.md).
 - Two extra projects to maintain.
 
 ## Related
 
 - [ADR-0008: Custom request dispatch](./0008-custom-request-dispatch.md) (superseded)
+- [ADR-0019: Reflection-free request and domain-event dispatch](./0019-reflection-free-dispatch.md) (amends this ADR)
 - [ADR-0002: Clean Architecture + vertical slices](./0002-clean-architecture-vertical-slices.md)
 - [ADR-0010: OpenAPI contract & generated clients](./0010-openapi-contract-generated-clients.md)
 - [backend-development.md](../instructions/backend-development.md) · [testing.md](../instructions/testing.md)
