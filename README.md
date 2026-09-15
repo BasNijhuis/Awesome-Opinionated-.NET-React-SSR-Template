@@ -137,10 +137,11 @@ or another module's `.Application.Contracts`. Adding a module is a documented re
 ### Opinionated guardrails
 
 - **The domain is immutable, by build error.** A Roslyn analyzer (`Acme.DomainAnalyzers`) is auto-wired
-  into every `*.Domain` project and fails the build on mutable state. Six rules, all errors:
+  into every `*.Domain` project and fails the build on mutable state. Seven rules, all errors:
   `ACME001` mutable state · `ACME002` records-only · `ACME003` no mutable enumerables ·
-  `ACME004` `RaiseEvent<TSelf>` must pass the calling type · `ACME005` no public `init` ·
-  `ACME006` a domain type must not be mapped as an EF entity (map an Application `*Entity` instead).
+  `ACME004` a `TSelf` method type argument must be the calling type · `ACME005` no public `init` ·
+  `ACME006` a domain type must not be mapped as an EF entity (map an Application `*Entity` instead) ·
+  `ACME009` a `TSelf` base-type argument must be the declaring type (`Widget : AggregateRoot<Widget, WidgetId>`).
   See [ADR-0017](docs/adr/0017-immutable-domain-enforced-by-analyzer.md).
 - **Reproducible builds.** Solution-wide target framework, central package versions, committed NuGet
   lockfiles, and CSharpier/Biome formatting ([ADR-0011](docs/adr/0011-build-hygiene-formatting-lockfiles.md)).

@@ -7,13 +7,11 @@ namespace Acme.Modules.Greetings.Domain;
 /// The Greetings capability aggregate: a single message captured at a point in time.
 /// <para>Immutable (#23): every transition returns a new <see cref="Greeting"/>.</para>
 /// </summary>
-public sealed record Greeting : AggregateRoot
+public sealed record Greeting : AggregateRoot<Greeting, GreetingId>
 {
-    public GreetingId Id { get; private init; }
+    public override GreetingId Id { get; }
     public string Message { get; private init; }
     public DateTimeOffset CreatedAt { get; private init; }
-
-    public override bool HasSameIdentity(AggregateRoot other) => other is Greeting o && o.Id == Id;
 
     private Greeting(GreetingId id, string message, DateTimeOffset createdAt)
     {

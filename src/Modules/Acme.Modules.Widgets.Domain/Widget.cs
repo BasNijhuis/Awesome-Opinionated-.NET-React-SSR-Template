@@ -8,14 +8,12 @@ namespace Acme.Modules.Widgets.Domain;
 /// The Widgets capability aggregate: a named item with a quantity, captured at a point in time.
 /// <para>Immutable (#23): every transition returns a new <see cref="Widget"/>.</para>
 /// </summary>
-public sealed record Widget : AggregateRoot
+public sealed record Widget : AggregateRoot<Widget, WidgetId>
 {
-    public WidgetId Id { get; private init; }
+    public override WidgetId Id { get; }
     public string Name { get; private init; }
     public int Quantity { get; private init; }
     public DateTimeOffset CreatedAt { get; private init; }
-
-    public override bool HasSameIdentity(AggregateRoot other) => other is Widget o && o.Id == Id;
 
     private Widget(WidgetId id, string name, int quantity, DateTimeOffset createdAt)
     {
@@ -60,7 +58,7 @@ public sealed record Widget : AggregateRoot
             );
         }
 
-        return (this with { Quantity = newQuantity }).RaiseEvent<Widget>(
+        return (this with { Quantity = newQuantity }).RaiseEvent(
             new WidgetQuantityAdjusted(Id.Value, Name, Quantity, newQuantity)
         );
     }
