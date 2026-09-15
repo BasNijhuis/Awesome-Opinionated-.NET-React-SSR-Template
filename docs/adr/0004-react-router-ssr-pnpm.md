@@ -9,13 +9,13 @@ We need a modern React UI with server-side rendering for fast first paint, SEO-f
 
 ## Decision
 
-Use **React Router Framework v8** (SSR enabled) with **pnpm 11.x** as the sole frontend package manager.
+Use **React Router Framework v8** (SSR enabled) with **pnpm 12.x** as the sole frontend package manager.
 
 | Choice | Value |
 |--------|-------|
 | Framework | React Router 8 (`create-react-router`) |
 | Rendering | SSR via `@react-router/node` + Vite |
-| Package manager | pnpm (`packageManager: "pnpm@11.9.0"`) |
+| Package manager | pnpm (`packageManager: "pnpm@12.4.2"`) |
 | Workspace | single ROOT `pnpm-workspace.yaml` (members `src/acme-web`, `scripts`, `tests/e2e`) with a `catalog:` for shared dev-dep versions |
 | Aspire integration | `AddJavaScriptApp(...).WithPnpm().WithRunScript("dev")` |
 | Lockfile | one root `pnpm-lock.yaml` committed to git |

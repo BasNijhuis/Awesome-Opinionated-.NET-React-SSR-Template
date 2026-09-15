@@ -17,10 +17,10 @@ jobs:
     name: Backend (build + test)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
           cache: true
@@ -70,7 +70,7 @@ jobs:
       # Non-gating: coverage is published for inspection only — no thresholds, never fails the run.
       - name: Upload backend coverage
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
           path: "**/TestResults/coverage.cobertura.xml"
@@ -83,10 +83,10 @@ jobs:
     name: Setup script (tests)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
 
@@ -99,34 +99,53 @@ jobs:
     name: Frontend (build + checks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The frontend build runs `api:generate`, which builds the API to emit the OpenAPI spec + client
       # (#4) — so this track needs the .NET SDK too. It builds the API independently of the backend
       # job, keeping the tracks decoupled.
       - name: Set up .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
           cache: true
           cache-dependency-path: "**/packages.lock.json"
 
-      - name: Set up Node 22
-        uses: actions/setup-node@v4
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
 
+      # pnpm 12 ships as a native binary Corepack downloads on first use (~36 MB). Pin Corepack's
+      # home so the cache step below targets the exact directory Corepack writes to — the default is
+      # XDG-dependent, and a wrong guess would silently re-download on every run. Exported through
+      # $GITHUB_ENV because job-level `env:` cannot read the `runner` context.
       - name: Enable Corepack (pnpm)
-        run: corepack enable
+        run: |
+          corepack enable
+          echo "COREPACK_HOME=$RUNNER_TEMP/corepack" >> "$GITHUB_ENV"
+
+      # Corepack's copy of pnpm, including the native binary it fetches on first run. Keyed on the
+      # root package.json because that is where `packageManager` pins the pnpm version. No
+      # restore-keys: a partial hit would restore a stale pnpm version that still has to be
+      # re-downloaded, so an exact match is the only useful one.
+      - name: Cache Corepack (pnpm binary)
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/corepack
+          key: ${{ runner.os }}-corepack-${{ hashFiles('package.json') }}
 
       # Single root pnpm workspace: install once at the repo root, then drive each member with
       # `pnpm --filter`. The lone root lockfile is the cache key + the frozen-lockfile gate.
+      # The `-v11-` segment is pnpm's STORE format version (pnpm 12 writes store/v11; pnpm 11 wrote
+      # store/v10). It keeps the restore-keys prefix from resurrecting a previous major's dead store
+      # alongside the live one — bump it whenever pnpm changes the store layout again.
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-pnpm-
+          key: ${{ runner.os }}-pnpm-v11-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-v11-
 
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
@@ -148,7 +167,7 @@ jobs:
 
       - name: Upload frontend coverage
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: src/Services/acme-web/coverage
@@ -161,10 +180,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
           cache: true
@@ -176,26 +195,47 @@ jobs:
       - name: Create + trust HTTPS dev certificate
         run: dotnet dev-certs https --trust || true
 
-      - name: Set up Node 22
-        uses: actions/setup-node@v4
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
 
+      # pnpm 12 ships as a native binary Corepack downloads on first use (~36 MB). Pin Corepack's
+      # home so the cache step below targets the exact directory Corepack writes to — the default is
+      # XDG-dependent, and a wrong guess would silently re-download on every run. Exported through
+      # $GITHUB_ENV because job-level `env:` cannot read the `runner` context.
       - name: Enable Corepack (pnpm)
-        run: corepack enable
+        run: |
+          corepack enable
+          echo "COREPACK_HOME=$RUNNER_TEMP/corepack" >> "$GITHUB_ENV"
 
+      # Corepack's copy of pnpm, including the native binary it fetches on first run. Keyed on the
+      # root package.json because that is where `packageManager` pins the pnpm version. No
+      # restore-keys: a partial hit would restore a stale pnpm version that still has to be
+      # re-downloaded, so an exact match is the only useful one.
+      - name: Cache Corepack (pnpm binary)
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/corepack
+          key: ${{ runner.os }}-corepack-${{ hashFiles('package.json') }}
+
+      # Single root pnpm workspace: install once at the repo root, then drive each member with
+      # `pnpm --filter`. The lone root lockfile is the cache key + the frozen-lockfile gate.
+      # The `-v11-` segment is pnpm's STORE format version (pnpm 12 writes store/v11; pnpm 11 wrote
+      # store/v10). It keeps the restore-keys prefix from resurrecting a previous major's dead store
+      # alongside the live one — bump it whenever pnpm changes the store layout again.
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-pnpm-
+          key: ${{ runner.os }}-pnpm-v11-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-v11-
 
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
@@ -213,7 +253,7 @@ jobs:
 
       - name: Upload Playwright report
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
