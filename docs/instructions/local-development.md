@@ -9,7 +9,7 @@
    dotnet dev-certs https --trust
    ```
 
-3. Restore local .NET tools (CSharpier):
+3. Restore local .NET tools (CSharpier, Kiota — the API client build also restores them on demand):
 
    ```powershell
    dotnet tool restore

@@ -2,14 +2,16 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- Kiota input/output. The generated client lives in obj/ (git-ignored), never in source; one
+         folder per configuration so concurrent Debug/Release builds don't wipe each other's output. -->
+    <AcmeRepoRoot>$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'Directory.Packages.props'))</AcmeRepoRoot>
+    <AcmeOpenApiSpec>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '..', '..', 'Services', 'Acme.Api', 'openapi', 'v1.json'))</AcmeOpenApiSpec>
+    <KiotaOutputDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(BaseIntermediateOutputPath)', '$(Configuration)', '$(TargetFramework)', 'Kiota'))</KiotaOutputDir>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="NSwag.ApiDescription.Client">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Kiota.Bundle" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,14 +23,37 @@
     />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Generates a strongly-typed client into obj/ (git-ignored) at build time. -->
-    <OpenApiReference
-      Include="..\..\Services\Acme.Api\openapi\v1.json"
-      CodeGenerator="NSwagCSharp"
-      ClassName="AcmeApiClient"
-      Namespace="Acme.ApiClient"
-      Options="/UseBaseUrl:false /GenerateClientInterfaces:true"
+  <!-- Regenerates the Kiota client when the spec, this project, the pinned generator
+       (.config/dotnet-tools.json) or the runtime version (Directory.Packages.props) changes. Restores
+       the local tool first so a fresh clone builds without a manual `dotnet tool restore`.
+       NoServerEntry is disabled because the spec has no `servers` entry by design
+       (AcmeApiClientFactory takes the base URL from the HttpClient). -->
+  <Target
+    Name="GenerateKiotaClient"
+    BeforeTargets="CoreCompile"
+    Inputs="$(AcmeOpenApiSpec);$(MSBuildProjectFullPath);$(AcmeRepoRoot)/.config/dotnet-tools.json;$(AcmeRepoRoot)/Directory.Packages.props"
+    Outputs="$(KiotaOutputDir)kiota-lock.json"
+  >
+    <Exec
+      Command="dotnet tool restore"
+      WorkingDirectory="$(MSBuildProjectDirectory)"
+      StandardOutputImportance="low"
     />
-  </ItemGroup>
+    <Exec
+      Command="dotnet kiota generate --language CSharp --openapi &quot;$(AcmeOpenApiSpec)&quot; --output &quot;$(KiotaOutputDir.TrimEnd('\/'))&quot; --class-name AcmeApiClient --namespace-name Acme.ApiClient --clean-output --exclude-backward-compatible --disable-validation-rules NoServerEntry --log-level Warning"
+      WorkingDirectory="$(MSBuildProjectDirectory)"
+      EnvironmentVariables="KIOTA_TUTORIAL_ENABLED=false;KIOTA_OFFLINE_ENABLED=true"
+    />
+  </Target>
+
+  <!-- Separate from generation so an incremental skip of GenerateKiotaClient still compiles the code. -->
+  <Target Name="IncludeKiotaClient" AfterTargets="GenerateKiotaClient" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(KiotaOutputDir)**/*.cs" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CleanKiotaClient" AfterTargets="Clean">
+    <RemoveDir Directories="$(KiotaOutputDir)" />
+  </Target>
 </Project>

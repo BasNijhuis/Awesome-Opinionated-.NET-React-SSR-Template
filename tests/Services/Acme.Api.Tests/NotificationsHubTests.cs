@@ -1,4 +1,5 @@
 using Acme.ApiClient;
+using Acme.ApiClient.Models;
 using Acme.Kernel.Application.Common.Realtime;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -16,7 +17,7 @@ public class NotificationsHubTests
         // Arrange — subscribe to the "greetings" channel on the notifications hub
         var cancellationToken = TestContext.Current.CancellationToken;
         await using var factory = TestWebApplicationFactory.Create();
-        var client = new AcmeApiClient(factory.CreateClient());
+        var client = AcmeApiClientFactory.Create(factory.CreateClient());
 
         var received = new TaskCompletionSource<NotificationPayload>(
             TaskCreationOptions.RunContinuationsAsynchronously
@@ -46,9 +47,9 @@ public class NotificationsHubTests
         await connection.InvokeAsync("JoinChannel", "greetings", cancellationToken);
 
         // Act — create a greeting; its handler publishes to the "greetings" channel
-        await client.CreateGreetingAsync(
+        await client.Api.Greetings.PostAsync(
             new CreateGreetingRequest { Message = "ping" },
-            cancellationToken
+            cancellationToken: cancellationToken
         );
 
         // Assert — the published notification arrives on the subscribed channel

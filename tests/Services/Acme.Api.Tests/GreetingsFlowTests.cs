@@ -1,4 +1,5 @@
 using Acme.ApiClient;
+using Acme.ApiClient.Models;
 
 namespace Acme.Api.Tests;
 
@@ -10,24 +11,27 @@ public class GreetingsFlowTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         await using var factory = TestWebApplicationFactory.Create();
-        var client = new AcmeApiClient(factory.CreateClient());
+        var client = AcmeApiClientFactory.Create(factory.CreateClient());
 
         // Act — create
-        var created = await client.CreateGreetingAsync(
+        var created = await client.Api.Greetings.PostAsync(
             new CreateGreetingRequest { Message = "hello world" },
-            cancellationToken
+            cancellationToken: cancellationToken
         );
+        var createdId = created!.Id!.Value;
 
         // Act — get the same greeting back
-        var fetched = await client.GetGreetingAsync(created.Id, cancellationToken);
+        var fetched = await client
+            .Api.Greetings[createdId]
+            .GetAsync(cancellationToken: cancellationToken);
 
         // Act — list
-        var all = await client.ListGreetingsAsync(cancellationToken);
+        var all = await client.Api.Greetings.GetAsync(cancellationToken: cancellationToken);
 
         // Assert
-        created.Greeting.Message.Should().Be("hello world");
-        fetched.Id.Should().Be(created.Id);
+        created.Greeting!.Message.Should().Be("hello world");
+        fetched!.Id.Should().Be(createdId);
         fetched.Message.Should().Be("hello world");
-        all.Should().ContainSingle(g => g.Id == created.Id);
+        all.Should().ContainSingle(g => g.Id == createdId);
     }
 }
