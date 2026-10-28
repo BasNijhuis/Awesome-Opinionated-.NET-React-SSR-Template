@@ -28,7 +28,7 @@ whole stack end to end. Use them as the recipe for your own capabilities, then d
 | Solution format | `.slnx` (XML) | [0007](docs/adr/0007-slnx-solution-format.md) |
 | Request handling | In-house CQRS dispatch + **`Result<T>`** for expected failures | [0008](docs/adr/0008-custom-request-dispatch.md), [0013](docs/adr/0013-result-objects-cqrs.md) |
 | Persistence | Read/write split, coordinating unit of work, per-module schema | [0009](docs/adr/0009-session-persistence-patterns.md), [0016](docs/adr/0016-aggregate-decomposition-events-per-module-persistence.md) |
-| API contract | Build-time OpenAPI → generated C# (NSwag) + TypeScript (hey-api) clients | [0010](docs/adr/0010-openapi-contract-generated-clients.md) |
+| API contract | Build-time OpenAPI → generated C# (Kiota) + TypeScript (hey-api) clients | [0010](docs/adr/0010-openapi-contract-generated-clients.md) |
 | Build hygiene | CSharpier, NuGet lockfiles, solution-wide TFM | [0011](docs/adr/0011-build-hygiene-formatting-lockfiles.md) |
 | Frontend lint/format | Biome | [0012](docs/adr/0012-biome-frontend-lint-format.md) |
 | Read models | Application-composed projections over `IReadDataContext` | [0015](docs/adr/0015-read-data-context.md) |
@@ -178,7 +178,7 @@ src/
   Kernel/Acme.Kernel.*            # shared Domain/Application/Contracts/Infrastructure
   BuildingBlocks/Acme.*           # CQRS(.Abstractions), DomainAbstractions, Http, DomainAnalyzers
   Modules/Acme.Modules.<M>.*      # capability modules (Greetings, Widgets)
-  Misc/Acme.ApiClient             # NSwag-generated C# client (build artifact)
+  Misc/Acme.ApiClient             # Kiota-generated C# client (build artifact)
 scripts/                          # workspace member: web build helper (generate-api-types.ts)
 tests/                            # xUnit v3 + MTP v2, incl. NetArchTest boundary rules
 tests/e2e/                        # workspace member (package `e2e`): Playwright suite

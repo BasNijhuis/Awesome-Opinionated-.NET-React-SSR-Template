@@ -23,7 +23,7 @@
 ├── src/                          # modular monolith — see ADR-0014. .slnx solution folders in (parens)
 │   ├── Services/Acme.Api/          # HTTP host — composes modules + OpenAPI + the NotificationsHub (Services)
 │   ├── Services/acme-web/         # React Router SSR (pnpm) (Services; not a .slnx project)
-│   ├── Misc/Acme.ApiClient/        # NSwag-generated C# client (obj/, git-ignored) (Misc)
+│   ├── Misc/Acme.ApiClient/        # Kiota-generated C# client (obj/, git-ignored) (Misc)
 │   ├── Aspire/Acme.{AppHost,ServiceDefaults}/   # (Aspire)
 │   ├── Kernel/Acme.Kernel.{Domain,Application,Contracts,Infrastructure}/  # (Kernel) shared primitives (typed ids/enums, DomainEvents), ports, cross-module DTOs, coordinating UoW
 │   ├── BuildingBlocks/Acme.{DomainAbstractions,CQRS.Abstractions,CQRS,Http,DomainAnalyzers}/  # (BuildingBlocks) Result/Error, dispatcher, endpoint helpers, immutable-domain analyzer

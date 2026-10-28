@@ -112,7 +112,7 @@ dotnet run --project tests/Acme.Modules.Greetings.Domain.Tests
 | Analyzers | `xunit.analyzers` (transitive via `xunit.v3.mtp-v2` — no explicit reference needed) |
 | Runner | Microsoft Testing Platform v2 (CLI via `global.json`) |
 | IDE discovery | `Microsoft.NET.Test.Sdk` + `xunit.runner.visualstudio` (via `tests/TestProjects.props`) |
-| API integration | `Microsoft.AspNetCore.Mvc.Testing` 10.0.12 + generated `AcmeApiClient` |
+| API integration | `Microsoft.AspNetCore.Mvc.Testing` 10.0.12 + Kiota-generated `AcmeApiClient` (`Microsoft.Kiota.Bundle`) |
 
 Package versions are managed centrally in `Directory.Packages.props` at the repo root.
 
@@ -234,16 +234,20 @@ Same applies to `IRequestDispatcher.SendAsync`/`QueryAsync`, `PostAsJsonAsync`, 
 
 ### Typed client for endpoint flows
 
-Prefer the generated **`AcmeApiClient`** (from `Acme.ApiClient`, see [ADR-0010](../adr/0010-openapi-contract-generated-clients.md)) over hand-written paths and DTOs when testing the API contract. Build it over the factory's `HttpClient`, and use `TestWebApplicationFactory.Create(...)`. Pass a deterministic fake (e.g. a fixed `IRandomProvider`) when a random outcome would otherwise make the flow flaky:
+Prefer the generated **`AcmeApiClient`** (from `Acme.ApiClient`, see [ADR-0010](../adr/0010-openapi-contract-generated-clients.md)) over hand-written paths and DTOs when testing the API contract. Build it over the factory's `HttpClient` with `AcmeApiClientFactory.Create(...)`, and use `TestWebApplicationFactory.Create(...)`. Pass a deterministic fake (e.g. a fixed `IRandomProvider`) when a random outcome would otherwise make the flow flaky:
 
 ```csharp
 await using var factory = TestWebApplicationFactory.Create();
-var client = new AcmeApiClient(factory.CreateClient());
+var client = AcmeApiClientFactory.Create(factory.CreateClient());
 
-var created = await client.CreateGreetingAsync(
+var created = await client.Api.Greetings.PostAsync(
     new CreateGreetingRequest { Message = "Hello, world" },
-    TestContext.Current.CancellationToken);
+    cancellationToken: TestContext.Current.CancellationToken);
+var fetched = await client.Api.Greetings[created!.Id!.Value].GetAsync(
+    cancellationToken: TestContext.Current.CancellationToken);
 ```
+
+Kiota (the generator) makes every model property nullable, whatever the spec says is `required`, so use `!` / `.Value` on fields the test expects to be present. Error responses throw an `ApiException` subclass per declared schema (404/409/422 → `ProblemDetails`, 400 → `HttpValidationProblemDetails`; undeclared statuses → plain `ApiException`), so assert `ThrowAsync<ApiException>()` and its `ResponseStatusCode` unless the body matters.
 
 Raw `HttpClient` is still fine for non-contract checks (e.g. `/api/ping`, the OpenAPI document itself).
 

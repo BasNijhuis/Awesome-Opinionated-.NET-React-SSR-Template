@@ -160,9 +160,11 @@ If the user **skipped** Step 1, do **not** do this — keep the examples.
 
 These are generated, never hand-edited — regenerate after the backend changes:
 
-- OpenAPI doc + typed clients: `pnpm --filter <web> run api:generate`
-  (rebuilds `<Prefix>.Api`, re-exports `openapi/v1.json`, regenerates the TS client under
-  `app/lib/api/generated/`, and refreshes the NSwag C# client in `<Prefix>.ApiClient`).
+- OpenAPI doc + TS client: `pnpm --filter <web> run api:generate`
+  (rebuilds `<Prefix>.Api`, re-exports `openapi/v1.json`, and regenerates the TS client under
+  `app/lib/api/generated/`).
+- C# client: `dotnet build <Prefix>.slnx` regenerates the Kiota client in `<Prefix>.ApiClient`
+  (the build restores the pinned `kiota` local tool itself).
 - If you changed routes/locales, run `pnpm --filter <web> run typecheck` and `pnpm --filter <web> run lint`.
 
 ## Step 6 — Rewrite the identity prose

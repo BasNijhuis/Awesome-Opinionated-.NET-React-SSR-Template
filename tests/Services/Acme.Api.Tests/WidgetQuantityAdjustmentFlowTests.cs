@@ -1,4 +1,5 @@
 using Acme.ApiClient;
+using Acme.ApiClient.Models;
 
 namespace Acme.Api.Tests;
 
@@ -15,25 +16,26 @@ public class WidgetQuantityAdjustmentFlowTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         await using var factory = TestWebApplicationFactory.Create();
-        var client = new AcmeApiClient(factory.CreateClient());
+        var client = AcmeApiClientFactory.Create(factory.CreateClient());
 
-        var created = await client.CreateWidgetAsync(
+        var created = await client.Api.Widgets.PostAsync(
             new CreateWidgetRequest { Name = "Gadget", Quantity = 5 },
-            cancellationToken
+            cancellationToken: cancellationToken
         );
 
         // Act — a widget command raises a cross-module event the Greetings module reacts to
-        var adjusted = await client.AdjustWidgetQuantityAsync(
-            created.Id,
-            new AdjustWidgetQuantityRequest { Delta = 3 },
-            cancellationToken
-        );
+        var adjusted = await client
+            .Api.Widgets[created!.Id!.Value]
+            .AdjustQuantity.PostAsync(
+                new AdjustWidgetQuantityRequest { Delta = 3 },
+                cancellationToken: cancellationToken
+            );
 
         // Assert — the widget is updated...
-        adjusted.Quantity.Should().Be(8);
+        adjusted!.Quantity.Should().Be(8);
 
         // ...and the reaction committed a greeting in the same transaction
-        var greetings = await client.ListGreetingsAsync(cancellationToken);
+        var greetings = await client.Api.Greetings.GetAsync(cancellationToken: cancellationToken);
         greetings
             .Should()
             .ContainSingle(g => g.Message == "Widget 'Gadget' quantity changed from 5 to 8.");
@@ -45,26 +47,27 @@ public class WidgetQuantityAdjustmentFlowTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         await using var factory = TestWebApplicationFactory.Create();
-        var client = new AcmeApiClient(factory.CreateClient());
+        var client = AcmeApiClientFactory.Create(factory.CreateClient());
 
-        var created = await client.CreateWidgetAsync(
+        var created = await client.Api.Widgets.PostAsync(
             new CreateWidgetRequest { Name = "Gadget", Quantity = 1 },
-            cancellationToken
+            cancellationToken: cancellationToken
         );
 
         // Act — the domain rule rejects this (would go negative)
         var act = async () =>
-            await client.AdjustWidgetQuantityAsync(
-                created.Id,
-                new AdjustWidgetQuantityRequest { Delta = -5 },
-                cancellationToken
-            );
+            await client
+                .Api.Widgets[created!.Id!.Value]
+                .AdjustQuantity.PostAsync(
+                    new AdjustWidgetQuantityRequest { Delta = -5 },
+                    cancellationToken: cancellationToken
+                );
 
         // Assert — a 409 Conflict, and no announcement greeting was written (transaction rolled back)
-        var error = await act.Should().ThrowAsync<ApiException>();
-        error.Which.StatusCode.Should().Be(409);
+        var error = await act.Should().ThrowAsync<ProblemDetails>();
+        error.Which.ResponseStatusCode.Should().Be(409);
 
-        var greetings = await client.ListGreetingsAsync(cancellationToken);
+        var greetings = await client.Api.Greetings.GetAsync(cancellationToken: cancellationToken);
         greetings.Should().BeEmpty();
     }
 }
