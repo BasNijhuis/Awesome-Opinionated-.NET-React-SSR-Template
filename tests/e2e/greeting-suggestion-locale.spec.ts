@@ -14,6 +14,6 @@ test("greeting suggestions follow the cookie locale", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "nl");
 
   // The suggestion (served by the backend) is now Dutch, proving the cookie reached the API.
-  const suggestion = await page.getByTestId("greeting-suggestion").innerText();
+  const suggestion = (await page.getByTestId("greeting-suggestion").textContent()) ?? "";
   expect(DUTCH.some((phrase) => suggestion.includes(phrase))).toBe(true);
 });

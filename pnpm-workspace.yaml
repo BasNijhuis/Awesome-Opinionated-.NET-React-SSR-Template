@@ -8,8 +8,22 @@ packages:
 allowBuilds:
   esbuild: true
 
+# Security overrides for transitive pins the parent won't widen. Drop each once its parent moves on.
+overrides:
+  # @hey-api/json-schema-ref-parser 1.4.4 pins js-yaml to exactly 4.2.0, which has three quadratic-CPU
+  # advisories fixed by 4.3.2 (same major). Only used at build time, by `api:generate`.
+  "js-yaml@4.2.0": "4.3.2"
+
 # Shared dev-dependency versions referenced by members via `catalog:`.
+#
+# pnpm's default minimumReleaseAge (24 hours) is kept as a supply-chain cooldown: dependencies (here
+# and in the members) are on the newest version published more than a day ago, so `pnpm outdated`
+# can list a newer release until it ages in. Never add a minimumReleaseAgeExclude list to skip it.
 catalog:
-  "@biomejs/biome": "2.5.13"
-  "@types/node": "26.5.1"
-  tsx: "4.23.13"
+  "@biomejs/biome": "2.6.8"
+  "@types/node": "26.6.6"
+  tsx: "4.23.15"
+  # Held at 6.x: TypeScript 7 ships no compiler API on its default export, and @hey-api/openapi-ts
+  # 0.99.0 (the latest) builds the client with it (`ts.SyntaxKind` is undefined under 7.0.2, so
+  # `api:generate` crashes). Move to 7 once hey-api supports it.
+  typescript: "6.0.3"

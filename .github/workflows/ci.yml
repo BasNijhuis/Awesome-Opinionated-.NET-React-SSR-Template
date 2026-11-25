@@ -111,10 +111,10 @@ jobs:
           cache: true
           cache-dependency-path: "**/packages.lock.json"
 
-      - name: Set up Node 24
+      - name: Set up Node 26
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
 
       # pnpm 12 ships as a native binary Corepack downloads on first use (~36 MB). Pin Corepack's
       # home so the cache step below targets the exact directory Corepack writes to — the default is
@@ -210,10 +210,10 @@ jobs:
             ~/.aspire/bundle
           key: ${{ runner.os }}-aspire-bundle-${{ steps.aspire.outputs.version }}
 
-      - name: Set up Node 24
+      - name: Set up Node 26
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
 
       # pnpm 12 ships as a native binary Corepack downloads on first use (~36 MB). Pin Corepack's
       # home so the cache step below targets the exact directory Corepack writes to — the default is

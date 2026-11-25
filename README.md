@@ -43,7 +43,7 @@ whole stack end to end. Use them as the recipe for your own capabilities, then d
 
 - **.NET 11 SDK**
 - **Docker Desktop** (for the PostgreSQL container)
-- **Node.js 24+** and **pnpm 12+** (`corepack enable`)
+- **Node.js 26+** and **pnpm 12+** (`corepack enable`)
 - **Aspire CLI** (optional; `dotnet tool install -g aspire.cli`). The AppHost fetches the matching CLI
   bundle itself on first run, so `dotnet run` works without it.
 
