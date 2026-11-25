@@ -55,6 +55,10 @@ Or:
 dotnet run --project src/Aspire/Acme.AppHost
 ```
 
+The AppHost runs on the Aspire CLI bundle (Aspire 17 requires it for C# AppHosts). It fetches the bundle
+matching its Aspire version on first run (`dnx aspire.cli@<version>`, ~290 MB into `~/.aspire`), so neither
+command needs a globally installed Aspire CLI.
+
 Or use the debugger: **Run and Debug → Acme AppHost → F5** (see [Debugging](./debugging.md)).
 
 ### What starts

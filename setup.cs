@@ -257,7 +257,7 @@ var repoRoot = (copying && !dryRun) ? targetRoot : sourceRoot;
 // ---------------------------------------------------------------------------------------
 // Replacement plan. Order matters: the most specific lowercase compounds first, then the
 // bare db name (word-boundary), then the all-caps analyzer prefix, then the PascalCase
-// prefix as a plain substring (so AcmeUnitOfWork, Acme_Api, Acme.Kernel all flow through).
+// prefix as a plain substring (so AcmeUnitOfWork, Acme.Api, Acme.Kernel all flow through).
 // ---------------------------------------------------------------------------------------
 var literalReplacements = new List<(string From, string To)>
 {

@@ -29,7 +29,7 @@ if (!isE2E)
 var database = postgres.AddDatabase("acme");
 
 var api = builder
-    .AddProject<Projects.Acme_Api>("acme-api")
+    .AddDotnetProject("acme-api", "../../Services/Acme.Api/Acme.Api.csproj")
     .WithReference(database)
     .WaitFor(database)
     .WithHttpHealthCheck("/health");

@@ -16,7 +16,7 @@ var postgres = builder.AddPostgres("postgres")
     .WithDataVolume()
     .AddDatabase("acme");
 
-var api = builder.AddProject<Projects.Acme_Api>("acme-api")
+var api = builder.AddDotnetProject("acme-api", "../../Services/Acme.Api/Acme.Api.csproj")
     .WithReference(postgres);
 ```
 

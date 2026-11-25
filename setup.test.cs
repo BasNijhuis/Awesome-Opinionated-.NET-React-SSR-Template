@@ -79,7 +79,7 @@ void MakeFixture(string root)
             + "var database = builder.AddDatabase(\"acme\");\n"
             + "var cs = config.GetConnectionString(\"acme\");\n"
             + "builder.AddJavaScriptApp(\"acme-web\", webPath);\n"
-            + "builder.AddProject<Projects.Acme_Api>(\"acme-api\");\n"
+            + "builder.AddDotnetProject(\"acme-api\", \"../../Services/Acme.Api/Acme.Api.csproj\");\n"
             + "builder.AddParameter(\"postgres-password\", \"acme-dev\");\n"
     );
     Write(
@@ -201,8 +201,11 @@ Console.WriteLine("A. full apply (in place)");
     Check("database name rewritten (bare word)", prog.Contains("AddDatabase(\"shopdb\")"));
     Check("connection string name rewritten", prog.Contains("GetConnectionString(\"shopdb\")"));
     Check("web resource rewritten", prog.Contains("AddJavaScriptApp(\"contoso-web\""));
-    Check("api resource rewritten", prog.Contains("(\"contoso-api\")"));
-    Check("aspire Projects type rewritten", prog.Contains("Projects.Contoso_Api"));
+    Check("api resource rewritten", prog.Contains("AddDotnetProject(\"contoso-api\""));
+    Check(
+        "aspire project path rewritten",
+        prog.Contains("Services/Contoso.Api/Contoso.Api.csproj")
+    );
     Check("db password rewritten", prog.Contains("\"contoso-dev\""));
     Check(
         "no leftover Acme/acme/ACME tokens in Program.cs",
@@ -289,7 +292,7 @@ Console.WriteLine("E. derived defaults (ShopFront)");
         "db defaults to kebab (Aspire-valid, no underscore)",
         prog.Contains("AddDatabase(\"shop-front\")")
     );
-    Check("api defaults to <kebab>-api", prog.Contains("(\"shop-front-api\")"));
+    Check("api defaults to <kebab>-api", prog.Contains("AddDotnetProject(\"shop-front-api\""));
     Check("web resource derived", prog.Contains("AddJavaScriptApp(\"shop-front-web\""));
     Check(
         "analyzer prefix defaults to upper-cased prefix",
@@ -318,7 +321,10 @@ Console.WriteLine("F. overlapping prefix (AcmeCorp)");
     Check("identifier renamed once (no AcmeCorpCorp)", Has(f, unit));
     Check("class renamed once", Read(f, unit).Contains("class AcmeCorpUnitOfWork { }"));
     var prog = Read(f, "src/Services/AcmeCorp.Api/Program.cs");
-    Check("aspire type renamed once", prog.Contains("Projects.AcmeCorp_Api"));
+    Check(
+        "aspire project path renamed once",
+        prog.Contains("Services/AcmeCorp.Api/AcmeCorp.Api.csproj")
+    );
     Check("db rewritten once", prog.Contains("AddDatabase(\"acmecorp\")"));
     Check("web resource not mangled", prog.Contains("AddJavaScriptApp(\"acmecorp-web\""));
 }

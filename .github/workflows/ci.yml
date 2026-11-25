@@ -195,6 +195,21 @@ jobs:
       - name: Create + trust HTTPS dev certificate
         run: dotnet dev-certs https --trust || true
 
+      # Aspire 17 C# AppHosts run on the Aspire CLI bundle (ASPIRE013). The AppHost fetches it on first
+      # run through `dnx aspire.cli@<version>` (AspireCliInvocationMode=DnxPinned) and unpacks it into
+      # ~/.aspire/versions, with ~/.aspire/bundle linking to it. Keyed on the Aspire version.
+      - name: Read Aspire version
+        id: aspire
+        run: echo "version=$(grep -oP 'Include="Aspire.Hosting.AppHost" Version="\K[^"]+' Directory.Packages.props)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Aspire CLI bundle
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.aspire/versions
+            ~/.aspire/bundle
+          key: ${{ runner.os }}-aspire-bundle-${{ steps.aspire.outputs.version }}
+
       - name: Set up Node 24
         uses: actions/setup-node@v7
         with:
