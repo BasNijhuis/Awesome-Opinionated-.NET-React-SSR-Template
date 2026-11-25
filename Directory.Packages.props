@@ -13,7 +13,7 @@
 
     <!-- API client runtime (Kiota). The generator is the `kiota` local tool in
          .config/dotnet-tools.json; bump both together per `dotnet kiota info -l CSharp`. -->
-    <PackageVersion Include="Microsoft.Kiota.Bundle" Version="2.1.2" />
+    <PackageVersion Include="Microsoft.Kiota.Bundle" Version="2.2.0" />
     <!-- Transitive pin only (EF Core Design, Aspire): no project references it directly, but without
          this pin some projects resolve the older 13.0.3. -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
