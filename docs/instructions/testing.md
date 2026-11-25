@@ -144,7 +144,7 @@ Structure every test in three phases, separated by blank lines and `// Arrange`,
 
 **Act is a single action.** Everything needed to reach the pre-state — including multi-step setup — goes in Arrange; the one call being tested is Act. Do not chain several actions in Act. Split multi-scenario tests into separate methods (one behavior each).
 
-**Build state with a builder, not inline aggregate calls.** Domain tests use a builder (e.g. `GreetingBuilder`) to declare the starting state; reach for `Result`-returning methods only when they *are* the action under test. Access a successful value with `.Value`.
+**Build state with a builder, not inline aggregate calls.** Domain tests use a builder (e.g. `GreetingBuilder`) to declare the starting state; reach for `Result`-returning methods only when they *are* the action under test. Get a successful value with `.ShouldSucceed()` (see [Asserting on a `Result`](#asserting-on-a-result)).
 
 Since expected failures return a `Result` ([ADR-0013](../adr/0013-result-objects-cqrs.md)), assert on the result — there is no `Assert.Throws` for domain-rule failures.
 
@@ -159,8 +159,7 @@ public void AdjustQuantity_within_bounds_succeeds()
     var result = widget.AdjustQuantity(3);
 
     // Assert
-    result.IsSuccess.Should().BeTrue();
-    result.Value.Quantity.Should().Be(8);
+    result.ShouldSucceed().Quantity.Should().Be(8);
 }
 
 [Fact]
@@ -173,8 +172,7 @@ public void AdjustQuantity_below_zero_fails()
     var result = widget.AdjustQuantity(-5);
 
     // Assert
-    result.IsFailure.Should().BeTrue();
-    result.Error.Category.Should().Be(ErrorCategory.Conflict);
+    result.ShouldFail().Error.Category.Should().Be(ErrorCategory.Conflict);
 }
 ```
 
@@ -182,7 +180,19 @@ Integration tests follow the same rule: set the data up via the typed client in 
 
 ## Assertions (AwesomeAssertions)
 
-Use **AwesomeAssertions** (`.Should()`) for all assertions — `value.Should().Be(...)`, `result.IsFailure.Should().BeTrue()`, `collection.Should().ContainSingle()`. It is wired in globally via `tests/TestProjects.props` (a `<Using Include="AwesomeAssertions" />`), so no per-file `using` is needed. Do not add new raw `Assert.*` calls.
+Use **AwesomeAssertions** (`.Should()`) for all assertions — `value.Should().Be(...)`, `result.ShouldFail()`, `collection.Should().ContainSingle()`. It is wired in globally via `tests/TestProjects.props` (a `<Using Include="AwesomeAssertions" />`), so no per-file `using` is needed. Do not add new raw `Assert.*` calls.
+
+### Asserting on a `Result`
+
+`Result<T>` is a union ([ADR-0020](../adr/0020-result-as-csharp-union.md)), so there is no `IsSuccess`/`Value` to assert on. `Acme.TestSupport.ResultAssertions` asserts the case and hands back its contents, failing with the errors (or the value) in the message:
+
+```csharp
+var widget = result.ShouldSucceed();        // the success value, or the test fails
+var failure = result.ShouldFail();          // the Failure, or the test fails
+failure.Error.Code.Should().Be("Name");     // the first error; failure.Errors has all of them
+```
+
+Reference `tests/Acme.TestSupport` from the test project and add `using Acme.TestSupport;`.
 
 ## Writing domain tests
 
@@ -199,8 +209,7 @@ public void Create_rejects_blank_message()
     var result = Greeting.Create(message);
 
     // Assert
-    result.IsFailure.Should().BeTrue();
-    result.Error.Category.Should().Be(ErrorCategory.Validation);
+    result.ShouldFail().Error.Category.Should().Be(ErrorCategory.Validation);
 }
 ```
 
@@ -264,7 +273,7 @@ Example for application-layer tests:
 ```csharp
 var cancellationToken = TestContext.Current.CancellationToken;
 var result = await dispatcher.QueryAsync(new MyQuery(), cancellationToken);
-result.IsSuccess.Should().BeTrue();
+result.ShouldSucceed().Should().NotBeNull();
 ```
 
 Domain unit tests are synchronous and do not trigger this rule.

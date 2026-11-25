@@ -3,6 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-06-21
 - **Builds on:** [ADR-0016](./0016-aggregate-decomposition-events-per-module-persistence.md) (event-driven aggregates), [ADR-0013](./0013-result-objects-cqrs.md) (`Result`/`Error`)
+- **Amended by:** [ADR-0020](./0020-result-as-csharp-union.md) (ACME002 accepts a C# `union`; ACME007/ACME008 retired)
 
 ## Context
 
@@ -42,7 +43,7 @@ Because aggregates are records, identity tracking can't rely on reference or val
 A custom analyzer (`Acme.DomainAnalyzers`, netstandard2.0) is wired into every domain-layer project **automatically** by the root `Directory.Build.targets` — keyed off the naming convention (any project ending in `.Domain`, plus the `DomainAbstractions` building block), it injects the analyzer `ProjectReference` (`OutputItemType="Analyzer"`) and the `EnforceImmutability` opt-in (a `CompilerVisibleProperty`). No individual `.csproj` repeats the wiring; a new domain project is covered the moment it's named `*.Domain`. The Domain-layer diagnostics, all **Error** severity:
 
 - **`ACME001`** — a Domain type exposes mutable state: a property with a `set` accessor (any accessibility, incl. `private set`) or a non-`readonly` field. `init`/`readonly` are allowed.
-- **`ACME002`** — a Domain type must be a `record`/`record struct`/`interface`/`enum`; a plain `class`/`struct` is flagged unless it is `static` or derives from a non-record base class (framework types).
+- **`ACME002`** — a Domain type must be a `record`/`record struct`/`interface`/`enum`, or a C# `union` ([ADR-0020](./0020-result-as-csharp-union.md)); a plain `class`/`struct` is flagged unless it is `static` or derives from a non-record base class (framework types).
 - **`ACME003`** — no **mutable enumerable type** (`List<>`/`IList<>`/`ICollection<>`/`HashSet<>`/`ISet<>`/`Dictionary<>`/`IDictionary<>`/`Sorted*`/`Queue<>`/`Stack<>`/`T[]`) may appear as a field, property, parameter, or return type of a Domain type; use `IReadOnly…`/`IEnumerable<>`/`System.Collections.Immutable.*`. (Scoped to declared signature/member types, so transient `.ToList()`/`[.. …]` materialization into a read-only shape inside a method body is allowed.)
 - **`ACME004`** — guards the self-type pattern at a **call site**: when invoking a generic method with a `TSelf` type parameter, the supplied type argument must be the **calling type** — `Greeting` calling `SomeSelfTyped<Widget>()` (an `InvalidCastException` at runtime) is a build error.
 - **`ACME005`** — a Domain type must not expose a **public `init`** accessor. Domain state is set only inside the declaring type (a constructor/factory plus internal `with`); a public `init` lets callers outside the type set state through an object initializer or `with`, bypassing invariants. `private`/`protected`/`internal` init are allowed. **Compiler-generated accessors are exempt** — positional-record primary-constructor parameters (their declaring syntax is the `ParameterSyntax`), so value objects and events declared positionally are not flagged; their primary constructor is the sanctioned construction path.
