@@ -1,6 +1,7 @@
 using Acme.CQRS;
 using Acme.CQRS.Abstractions;
 using Acme.DomainAbstractions;
+using Acme.TestSupport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,7 +19,7 @@ internal sealed class InternalPingHandler : IQueryHandler<InternalPingQuery, str
     public Task<Result<string>> HandleAsync(
         InternalPingQuery query,
         CancellationToken cancellationToken
-    ) => Task.FromResult(Result.Success("internal pong"));
+    ) => Task.FromResult<Result<string>>("internal pong");
 }
 
 public sealed class RequestDispatcherTests
@@ -30,7 +31,7 @@ public sealed class RequestDispatcherTests
         public Task<Result<string>> HandleAsync(
             PingQuery query,
             CancellationToken cancellationToken
-        ) => Task.FromResult(Result.Success("pong"));
+        ) => Task.FromResult<Result<string>>("pong");
     }
 
     private sealed class PingValidator : RequestValidator<PingQuery>
@@ -52,7 +53,7 @@ public sealed class RequestDispatcherTests
         public Task<Result<int>> HandleAsync(
             CountCommand command,
             CancellationToken cancellationToken
-        ) => Task.FromResult(Result.Success(command.Amount + 1));
+        ) => Task.FromResult<Result<int>>(command.Amount + 1);
     }
 
     private sealed record MissingQuery : IQuery<string>;
@@ -66,7 +67,7 @@ public sealed class RequestDispatcherTests
         public Task<Result<string>> HandleAsync(
             FailingQuery query,
             CancellationToken cancellationToken
-        ) => Task.FromResult(Result<string>.Failure(NotFound));
+        ) => Task.FromResult<Result<string>>(NotFound);
     }
 
     /// <summary>Records whether the handler ran, so a short-circuit can be asserted.</summary>
@@ -85,7 +86,7 @@ public sealed class RequestDispatcherTests
         public Task<Result<string>> HandleAsync(
             PingQuery query,
             CancellationToken cancellationToken
-        ) => Task.FromResult(Result.Success("unreachable"));
+        ) => Task.FromResult<Result<string>>("unreachable");
     }
 
     private sealed class ProbedPingHandler(HandlerProbe probe) : IQueryHandler<PingQuery, string>
@@ -96,7 +97,7 @@ public sealed class RequestDispatcherTests
         )
         {
             probe.Invoked = true;
-            return Task.FromResult(Result.Success("pong"));
+            return Task.FromResult<Result<string>>("pong");
         }
     }
 
@@ -123,8 +124,7 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.QueryAsync(new PingQuery(), cancellationToken);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be("pong");
+        result.ShouldSucceed().Should().Be("pong");
     }
 
     [Fact]
@@ -141,8 +141,7 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.SendAsync(new CountCommand(41), cancellationToken);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(42);
+        result.ShouldSucceed().Should().Be(42);
     }
 
     [Fact]
@@ -159,8 +158,7 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.QueryAsync(new InternalPingQuery(), cancellationToken);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be("internal pong");
+        result.ShouldSucceed().Should().Be("internal pong");
     }
 
     [Fact]
@@ -181,9 +179,9 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.QueryAsync(new PingQuery(), cancellationToken);
 
         // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Category.Should().Be(ErrorCategory.Validation);
-        result.Error.Message.Should().Be("always fails for test");
+        var failure = result.ShouldFail();
+        failure.Error.Category.Should().Be(ErrorCategory.Validation);
+        failure.Error.Message.Should().Be("always fails for test");
         probe.Invoked.Should().BeFalse("validation short-circuits before the handler runs");
     }
 
@@ -204,8 +202,11 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.QueryAsync(new PingQuery(), cancellationToken);
 
         // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Errors.Select(error => error.Code).Should().Equal(nameof(PingQuery), "Other");
+        result
+            .ShouldFail()
+            .Errors.Select(error => error.Code)
+            .Should()
+            .Equal(nameof(PingQuery), "Other");
     }
 
     [Fact]
@@ -222,8 +223,7 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.QueryAsync(new FailingQuery(), cancellationToken);
 
         // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(FailingHandler.NotFound);
+        result.ShouldFail().Error.Should().Be(FailingHandler.NotFound);
     }
 
     [Fact]
@@ -262,8 +262,7 @@ public sealed class RequestDispatcherTests
         var result = await dispatcher.QueryAsync(new PingQuery(), cancellationToken);
 
         // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Category.Should().Be(ErrorCategory.Validation);
+        result.ShouldFail().Error.Category.Should().Be(ErrorCategory.Validation);
     }
 
     [Fact]

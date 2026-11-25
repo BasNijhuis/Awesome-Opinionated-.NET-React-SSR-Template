@@ -8,5 +8,10 @@
 
     <!-- Deterministic, committed NuGet restore via packages.lock.json. -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+    <!-- A switch expression that misses a case fails the build (ADR-0020): "handle the failure" is the
+         compiler's exhaustiveness check over Result<T>'s union cases. CS8846 is the same check when the
+         only arm for a case has a `when` guard. -->
+    <WarningsAsErrors>$(WarningsAsErrors);CS8509;CS8846</WarningsAsErrors>
   </PropertyGroup>
 </Project>

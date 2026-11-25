@@ -3,6 +3,7 @@ using Acme.DomainAbstractions;
 using Acme.Kernel.Application.Common.Interfaces;
 using Acme.Kernel.Contracts;
 using Acme.Modules.Widgets.Application.Contracts;
+using Acme.Modules.Widgets.Domain;
 
 namespace Acme.Modules.Widgets.Application.Features.AdjustQuantity;
 
@@ -34,13 +35,15 @@ internal sealed class AdjustWidgetQuantityHandler(
             return WidgetErrors.NotFound(command.Id);
         }
 
-        var adjusted = widget.AdjustQuantity(command.Delta);
-        if (adjusted.IsFailure)
+        return widget.AdjustQuantity(command.Delta) switch
         {
-            return adjusted.Errors; // propagate the domain rule failure
-        }
+            Success<Widget>(var updated) => await PersistAsync(updated, cancellationToken),
+            Failure failure => failure, // propagate the domain rule failure
+        };
+    }
 
-        var updated = adjusted.Value;
+    private async Task<WidgetDto> PersistAsync(Widget updated, CancellationToken cancellationToken)
+    {
         repository.Update(updated); // sync — stages onto the tracked entity
         await unitOfWork.SaveChangesAsync(cancellationToken); // dispatches events + commits atomically
 

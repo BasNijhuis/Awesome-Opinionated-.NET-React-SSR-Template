@@ -1,4 +1,5 @@
 using Acme.CQRS.Abstractions;
+using Acme.DomainAbstractions;
 using Acme.Kernel.Domain.DomainEvents;
 using Acme.Modules.Greetings.Domain;
 using Acme.Modules.Greetings.Domain.Contracts;
@@ -26,9 +27,9 @@ internal sealed class WidgetQuantityAdjustedHandler(IGreetingRepository reposito
         // The announcement is built from the event and is always non-empty, so Create succeeds; guard
         // defensively rather than dereference a failed result — a missing announcement must never break
         // the widget transaction this reaction runs inside.
-        if (created.IsSuccess)
+        if (created is Success<Greeting>(var greeting))
         {
-            repository.Add(created.Value);
+            repository.Add(greeting);
         }
 
         return Task.CompletedTask;

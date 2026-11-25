@@ -7,7 +7,8 @@ namespace Acme.DomainAnalyzers;
 
 /// <summary>
 /// Flags domain types that are a plain <c>class</c>/<c>struct</c> (R6): a domain type must be a
-/// <c>record</c> (record class), a <c>record struct</c>, an <c>interface</c>, or an <c>enum</c>.
+/// <c>record</c> (record class), a <c>record struct</c>, a C# <c>union</c> (ADR-0020), an
+/// <c>interface</c>, or an <c>enum</c>.
 /// Two necessary exemptions apply because such types cannot be records: a <c>static</c> class
 /// (utility holder) and a class deriving from a non-record base other than <c>object</c> (it must
 /// remain a class to extend a framework base, e.g. an <c>Exception</c>- or <c>JsonConverter&lt;T&gt;</c>-derived
@@ -23,13 +24,13 @@ public sealed class DomainTypeKindAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor Rule = new(
         id: DiagnosticId,
-        title: "Domain types must be a record, record struct, interface, or enum",
-        messageFormat: "Domain type '{0}' must be a record, record struct, interface, or enum (not a {1})",
+        title: "Domain types must be a record, record struct, union, interface, or enum",
+        messageFormat: "Domain type '{0}' must be a record, record struct, union, interface, or enum (not a {1})",
         category: "Design",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Domain types must be a record (record class), a record struct, an interface, or "
-            + "an enum. A plain class/struct is not allowed, except a static class or a class deriving "
+        description: "Domain types must be a record (record class), a record struct, a C# union, an "
+            + "interface, or an enum. A plain class/struct is not allowed, except a static class or a class deriving "
             + "from a non-record base other than object (which cannot be a record)."
     );
 
@@ -66,6 +67,12 @@ public sealed class DomainTypeKindAnalyzer : DiagnosticAnalyzer
         }
 
         if (type.IsRecord)
+        {
+            return;
+        }
+
+        // A C# 15 union compiles to a struct but is an immutable, closed set of cases (ADR-0020).
+        if (type.IsUnion)
         {
             return;
         }

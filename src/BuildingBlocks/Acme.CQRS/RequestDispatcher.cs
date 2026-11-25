@@ -56,9 +56,9 @@ public sealed class RequestDispatcher(
         }
 
         var result = await adapter.HandleAsync(request, cancellationToken).ConfigureAwait(false);
-        if (result.IsFailure)
+        if (result is Failure failure)
         {
-            LogFailure(requestType, result.Errors);
+            LogFailure(requestType, failure.Errors);
         }
 
         return result;

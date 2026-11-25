@@ -450,6 +450,8 @@
       "acme.testsupport": {
         "type": "Project",
         "dependencies": {
+          "Acme.DomainAbstractions": "[1.0.0, )",
+          "AwesomeAssertions": "[9.6.0, )",
           "Testcontainers.PostgreSql": "[4.17.0, )"
         }
       },

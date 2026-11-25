@@ -2,6 +2,12 @@
   "version": 2,
   "dependencies": {
     "net11.0": {
+      "AwesomeAssertions": {
+        "type": "Direct",
+        "requested": "[9.6.0, )",
+        "resolved": "9.6.0",
+        "contentHash": "8kdtgI+tZIgP46ncnk650/dU4JSrn+n2Dkic8FvjIFn72P6Nv1Afyr5F8F3PsokHg1GBSBVo1/Z+eZOrU5esSA=="
+      },
       "Testcontainers.PostgreSql": {
         "type": "Direct",
         "requested": "[4.17.0, )",
@@ -96,6 +102,9 @@
           "SSH.NET": "2026.0.0",
           "SharpZipLib": "1.4.2"
         }
+      },
+      "acme.domainabstractions": {
+        "type": "Project"
       }
     }
   }

@@ -16,15 +16,18 @@ internal sealed class CreateGreetingHandler(
     public async Task<Result<CreateGreetingResult>> HandleAsync(
         CreateGreetingCommand command,
         CancellationToken cancellationToken
+    ) =>
+        Greeting.Create(command) switch
+        {
+            Success<Greeting>(var greeting) => await PersistAsync(greeting, cancellationToken),
+            Failure failure => failure, // propagate the domain rule failure
+        };
+
+    private async Task<CreateGreetingResult> PersistAsync(
+        Greeting greeting,
+        CancellationToken cancellationToken
     )
     {
-        var created = Greeting.Create(command);
-        if (created.IsFailure)
-        {
-            return created.Errors; // propagate the domain rule failure
-        }
-
-        var greeting = created.Value;
         repository.Add(greeting);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
