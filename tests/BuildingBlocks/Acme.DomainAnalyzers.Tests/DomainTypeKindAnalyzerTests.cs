@@ -106,6 +106,37 @@ public sealed class DomainTypeKindAnalyzerTests
     }
 
     [Fact]
+    public async Task Fires_On_HandWritten_Union_Types()
+    {
+        // [Union] + IUnion make Roslyn report a type as a union, but only the `union` keyword gives the
+        // compiler-built, immutable shape the exemption is for.
+        await VerifyEnforcedAsync(
+            """
+            using System.Runtime.CompilerServices;
+
+            public sealed record Cat(string Name);
+
+            [Union]
+            public sealed class {|ACME002:PetBox|} : IUnion
+            {
+                public PetBox(Cat cat) => Value = cat;
+
+                public object? Value { get; }
+            }
+
+            [Union]
+            public struct {|ACME002:PetSlot|} : IUnion
+            {
+                public PetSlot(Cat cat) => Value = cat;
+
+                public object? Value { get; }
+            }
+            """,
+            onDotNet11: true
+        );
+    }
+
+    [Fact]
     public async Task Passes_On_StaticClass()
     {
         // A static class is a utility holder and cannot be a record — exempt.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Acme.DomainAnalyzers;
@@ -71,8 +72,9 @@ public sealed class DomainTypeKindAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        // A C# 15 union compiles to a struct but is an immutable, closed set of cases (ADR-0020).
-        if (type.IsUnion)
+        // A C# 15 `union` declaration compiles to a struct but is an immutable, closed set of cases
+        // (ADR-0020). IsUnion alone also covers hand-written [Union] classes/structs, which stay flagged.
+        if (type.IsUnion && IsUnionDeclaration(type, context.CancellationToken))
         {
             return;
         }
@@ -100,6 +102,15 @@ public sealed class DomainTypeKindAnalyzer : DiagnosticAnalyzer
         var location = type.Locations.Length > 0 ? type.Locations[0] : Location.None;
         context.ReportDiagnostic(Diagnostic.Create(Rule, location, type.Name, kind));
     }
+
+    private static bool IsUnionDeclaration(
+        INamedTypeSymbol type,
+        CancellationToken cancellationToken
+    ) =>
+        type.DeclaringSyntaxReferences.Length > 0
+        && type.DeclaringSyntaxReferences.All(reference =>
+            reference.GetSyntax(cancellationToken).IsKind(SyntaxKind.UnionDeclaration)
+        );
 
     private static bool IsEnforcementEnabled(AnalyzerOptions options)
     {

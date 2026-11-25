@@ -10,11 +10,11 @@ public static class PostgresTestContainer
 {
     /// <summary>
     /// Matches the image Aspire's <c>AddPostgres</c> resolves — <c>Aspire.Hosting.PostgreSQL</c>
-    /// 13.5.4's <c>PostgresContainerImageTags</c> default (<c>docker.io/library/postgres:18.3</c>) — so
+    /// 17.0.0's <c>PostgresContainerImageTags</c> default (<c>docker.io/library/postgres:18.6</c>) — so
     /// tests run against the same Postgres version as production. That type is internal in the package's
     /// reference assembly, so the tag is pinned here; bump it when the Aspire package's default changes.
     /// </summary>
-    public const string Image = "docker.io/library/postgres:18.3";
+    public const string Image = "docker.io/library/postgres:18.6";
 
     public static PostgreSqlContainer Create() => new PostgreSqlBuilder(Image).Build();
 }

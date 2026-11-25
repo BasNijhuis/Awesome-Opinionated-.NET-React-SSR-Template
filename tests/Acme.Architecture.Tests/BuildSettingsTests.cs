@@ -22,6 +22,46 @@ public sealed class BuildSettingsTests
         warningsAsErrors.Should().Contain(warning);
     }
 
+    [Fact]
+    public void No_project_suppresses_or_drops_the_exhaustiveness_errors()
+    {
+        // Arrange: every MSBuild file in the repo, so a single project can't opt out quietly.
+        var root = RepoRoot();
+        var buildFiles = Directory
+            .EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(root, path))
+            .Where(path =>
+                path.EndsWith(".csproj") || path.EndsWith(".props") || path.EndsWith(".targets")
+            )
+            .Where(path => !IsUnder(path, "bin", "obj", "node_modules", ".git", ".claude"))
+            .Select(path => (Path: path, Xml: XDocument.Load(Path.Combine(root, path))));
+
+        // Act
+        var offenders = buildFiles
+            .SelectMany(file =>
+                file.Xml.Descendants("NoWarn")
+                    .Where(element =>
+                        element.Value.Contains("CS8509") || element.Value.Contains("CS8846")
+                    )
+                    .Select(_ => $"{file.Path}: NoWarn suppresses an exhaustiveness error")
+                    .Concat(
+                        file.Xml.Descendants("WarningsAsErrors")
+                            .Where(element =>
+                                !element.Value.TrimStart().StartsWith("$(WarningsAsErrors)")
+                            )
+                            .Select(_ => $"{file.Path}: WarningsAsErrors drops the inherited list")
+                    )
+            )
+            .ToList();
+
+        // Assert
+        offenders.Should().BeEmpty();
+    }
+
+    // Relative to the repo root, so a checkout that itself lives under e.g. .claude/ isn't excluded.
+    private static bool IsUnder(string relativePath, params string[] directoryNames) =>
+        relativePath.Split(Path.DirectorySeparatorChar).Any(directoryNames.Contains);
+
     private static string RepoRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

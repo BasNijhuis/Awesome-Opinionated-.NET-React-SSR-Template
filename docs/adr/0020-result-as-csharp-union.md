@@ -67,13 +67,15 @@ public sealed record Failure   // internal ctor; throws on zero errors
   value. Reading it compiles, so don't.
 - `default(Result<T>)` holds **neither** case and compiles without a warning. It matches no case pattern,
   and an exhaustive `switch` over it throws `SwitchExpressionException`. That is why code never gates on
-  `is not Failure`.
+  `is not Failure`. The dispatcher rejects a handler that returns one with an
+  `InvalidOperationException` naming the request, and `ShouldSucceed()`/`ShouldFail()` fail on it.
 - A `switch` **statement** is not checked for exhaustiveness. Use the expression.
 
 ### 4. Analyzers
 
-- **ACME002** (a domain type must be a record, …) accepts a C# `union` (`ITypeSymbol.IsUnion`). A
-  hand-written `struct` is still flagged.
+- **ACME002** (a domain type must be a record, …) accepts a type declared with the `union` keyword. A
+  hand-written `struct`, and a hand-written `[Union]` class or struct implementing `IUnion` (which Roslyn
+  also reports as `IsUnion`), are still flagged.
 - **ACME007** and **ACME008** are removed, with their tests and their opt-ins in
   `Directory.Build.targets`. Their ids are **retired**: `RetiredDiagnosticIdsTests` fails if any analyzer
   reports `{prefix}007` or `{prefix}008` again, deriving the prefix so a `setup.cs` rename keeps it valid.

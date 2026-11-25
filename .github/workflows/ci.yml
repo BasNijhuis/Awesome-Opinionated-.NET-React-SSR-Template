@@ -258,9 +258,10 @@ jobs:
       - name: Install Playwright browser
         run: pnpm --filter e2e exec playwright install --with-deps chromium
 
-      # Boots the full Aspire stack (Docker is available on ubuntu-latest; the Aspire AppHost SDK is
-      # restored from NuGet — no workload install). SSL_CERT_DIR makes the exported dev cert trusted
-      # by OpenSSL (so Aspire's preflight passes) while keeping the system CA bundle.
+      # Boots the full Aspire stack (Docker is available on ubuntu-latest; the Aspire packages come from
+      # NuGet and the CLI bundle from the cache above or `dnx aspire.cli` — no workload install).
+      # SSL_CERT_DIR makes the exported dev cert trusted by OpenSSL (so Aspire's preflight passes) while
+      # keeping the system CA bundle.
       - name: Run E2E
         run: |
           export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"

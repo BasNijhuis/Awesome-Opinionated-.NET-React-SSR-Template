@@ -56,12 +56,21 @@ public sealed class RequestDispatcher(
         }
 
         var result = await adapter.HandleAsync(request, cancellationToken).ConfigureAwait(false);
-        if (result is Failure failure)
+        switch (result)
         {
-            LogFailure(requestType, failure.Errors);
+            case Success<TResult>:
+                return result;
+            case Failure failure:
+                LogFailure(requestType, failure.Errors);
+                return result;
+            default:
+                // default(Result<T>) holds neither case (ADR-0020): a handler bug, reported here where
+                // the request is known rather than as a SwitchExpressionException in the endpoint.
+                throw new InvalidOperationException(
+                    $"The handler for {requestType.Name} returned default(Result<{typeof(TResult).Name}>), "
+                        + "which holds neither a success nor a failure. Return a value or an error."
+                );
         }
-
-        return result;
     }
 
     // DI's own "no keyed service" message names the internal adapter and omits the request type,

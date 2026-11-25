@@ -70,6 +70,17 @@ public sealed class RequestDispatcherTests
         ) => Task.FromResult<Result<string>>(NotFound);
     }
 
+    private sealed record DefaultResultQuery : IQuery<string>;
+
+    /// <summary>Returns <c>default(Result&lt;string&gt;)</c>, which holds neither union case.</summary>
+    private sealed class DefaultResultHandler : IQueryHandler<DefaultResultQuery, string>
+    {
+        public Task<Result<string>> HandleAsync(
+            DefaultResultQuery query,
+            CancellationToken cancellationToken
+        ) => Task.FromResult(default(Result<string>));
+    }
+
     /// <summary>Records whether the handler ran, so a short-circuit can be asserted.</summary>
     private sealed class HandlerProbe
     {
@@ -224,6 +235,27 @@ public sealed class RequestDispatcherTests
 
         // Assert
         result.ShouldFail().Error.Should().Be(FailingHandler.NotFound);
+    }
+
+    [Fact]
+    public async Task QueryAsync_rejects_a_default_result_naming_the_request()
+    {
+        // Arrange — default(Result<T>) matches neither case (ADR-0020); failing here names the request
+        // instead of surfacing later as a bare SwitchExpressionException in the endpoint.
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await using var provider = BuildProvider(services =>
+            services.AddQueryHandler<DefaultResultHandler, DefaultResultQuery, string>()
+        );
+        var dispatcher = provider.GetRequiredService<IRequestDispatcher>();
+
+        // Act
+        var dispatch = async () =>
+            await dispatcher.QueryAsync(new DefaultResultQuery(), cancellationToken);
+
+        // Assert
+        (await dispatch.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Message.Should()
+            .Contain(nameof(DefaultResultQuery));
     }
 
     [Fact]
