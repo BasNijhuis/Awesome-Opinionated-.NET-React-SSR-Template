@@ -7,14 +7,14 @@
       "commands": [
         "csharpier"
       ],
-      "rollForward": false
+      "rollForward": true
     },
     "microsoft.openapi.kiota": {
       "version": "1.36.1",
       "commands": [
         "kiota"
       ],
-      "rollForward": false
+      "rollForward": true
     }
   }
 }

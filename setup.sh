@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Thin wrapper for the cross-platform template setup script (macOS / Linux).
-# Requires the .NET 10 SDK (prerequisite #1). All arguments are forwarded.
+# Requires the .NET 11 SDK (prerequisite #1). All arguments are forwarded.
 #   ./setup.sh                 # interactive
 #   ./setup.sh --dry-run       # preview only
 #   ./setup.sh --yes           # accept defaults

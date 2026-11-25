@@ -10,7 +10,7 @@ monolith + React Router SSR).
 
 The work splits in two:
 
-1. **Mechanical rename** — owned by the cross-platform script `setup.cs` (.NET 10 file-based app;
+1. **Mechanical rename** — owned by the cross-platform script `setup.cs` (.NET 11 file-based app;
    macOS/Linux/Windows). Run it (`dotnet run setup.cs`, or `./setup.sh` / `./setup.ps1`); don't
    rename by hand. `--dry-run` previews, `--yes` + flags run it non-interactively.
 2. **Judgement work** — owned by you: scaffold real modules for the user's domain, regenerate the

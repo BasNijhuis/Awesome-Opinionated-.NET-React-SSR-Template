@@ -41,7 +41,7 @@ whole stack end to end. Use them as the recipe for your own capabilities, then d
 
 ### Prerequisites
 
-- **.NET 10 SDK**
+- **.NET 11 SDK**
 - **Docker Desktop** (for the PostgreSQL container)
 - **Node.js 24+** and **pnpm 12+** (`corepack enable`)
 - **Aspire CLI** (`dotnet tool install -g aspire.cli`)
@@ -208,7 +208,7 @@ All five share one source of truth: [`docs/template-setup.md`](docs/template-set
 
 ### The rename script (run directly, if you prefer)
 
-The mechanical rename lives in a cross-platform script (macOS, Linux, Windows; needs only the .NET 10
+The mechanical rename lives in a cross-platform script (macOS, Linux, Windows; needs only the .NET 11
 SDK). The skill runs it for you, but you can run it yourself:
 
 ```bash

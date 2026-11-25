@@ -2,7 +2,7 @@
 
 ```
 .
-├── Acme.slnx                      # XML solution (.NET 10+)
+├── Acme.slnx                      # XML solution (.NET 10+; this repo targets .NET 11)
 ├── Directory.Build.props          # solution-wide TFM, central PM, lock files
 ├── Directory.Build.targets        # auto-wires the domain analyzer per project
 ├── Directory.Packages.props       # pinned NuGet versions

@@ -1,6 +1,6 @@
 // Cross-platform template setup script (macOS / Linux / Windows).
 //
-// Run from the repo root with the .NET 10 SDK (already prerequisite #1):
+// Run from the repo root with the .NET 11 SDK (already prerequisite #1):
 //
 //     dotnet run setup.cs                 # interactive
 //     dotnet run setup.cs -- --dry-run    # show planned changes, write nothing

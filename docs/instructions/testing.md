@@ -112,7 +112,7 @@ dotnet run --project tests/Acme.Modules.Greetings.Domain.Tests
 | Analyzers | `xunit.analyzers` (transitive via `xunit.v3.mtp-v2` — no explicit reference needed) |
 | Runner | Microsoft Testing Platform v2 (CLI via `global.json`) |
 | IDE discovery | `Microsoft.NET.Test.Sdk` + `xunit.runner.visualstudio` (via `tests/TestProjects.props`) |
-| API integration | `Microsoft.AspNetCore.Mvc.Testing` 10.0.12 + Kiota-generated `AcmeApiClient` (`Microsoft.Kiota.Bundle`) |
+| API integration | `Microsoft.AspNetCore.Mvc.Testing` 11.0.0 + Kiota-generated `AcmeApiClient` (`Microsoft.Kiota.Bundle`) |
 
 Package versions are managed centrally in `Directory.Packages.props` at the repo root.
 
@@ -277,7 +277,7 @@ Reference: [xUnit1051](https://xunit.net/xunit.analyzers/rules/xUnit1051)
 dotnet test --project tests/Acme.Modules.Greetings.Domain.Tests -- --filter-class GreetingTests
 ```
 
-Note the `--` separator may not be required on .NET 10 SDK with native MTP.
+Note the `--` separator may not be required on the .NET 11 SDK with native MTP.
 
 ## Testcontainers
 
