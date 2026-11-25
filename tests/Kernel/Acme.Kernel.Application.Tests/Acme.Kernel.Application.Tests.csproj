@@ -14,5 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Kernel\Acme.Kernel.Application\Acme.Kernel.Application.csproj" />
+    <ProjectReference Include="..\..\Acme.TestSupport\Acme.TestSupport.csproj" />
   </ItemGroup>
 </Project>

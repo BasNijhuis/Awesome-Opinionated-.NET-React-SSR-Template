@@ -1,5 +1,6 @@
 using Acme.DomainAbstractions;
 using Acme.Modules.Greetings.Domain.Contracts;
+using Acme.TestSupport;
 
 namespace Acme.Modules.Greetings.Domain.Tests;
 
@@ -12,8 +13,7 @@ public sealed class GreetingTests
         var result = Greeting.Create(new CreateGreetingSpec("  hello  "));
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        var greeting = result.Value;
+        var greeting = result.ShouldSucceed();
         greeting.Message.Should().Be("hello");
         greeting.Id.Value.Should().NotBe(Guid.Empty);
         greeting.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
@@ -26,9 +26,9 @@ public sealed class GreetingTests
         var result = Greeting.Create(new CreateGreetingSpec("   "));
 
         // Assert — an expected, recoverable failure (Validation), not an exception
-        result.IsFailure.Should().BeTrue();
-        result.Error.Category.Should().Be(ErrorCategory.Validation);
-        result.Error.Code.Should().Be("Message");
+        var error = result.ShouldFail().Error;
+        error.Category.Should().Be(ErrorCategory.Validation);
+        error.Code.Should().Be("Message");
     }
 
     [Fact]

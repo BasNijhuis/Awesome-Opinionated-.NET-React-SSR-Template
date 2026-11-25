@@ -13,23 +13,31 @@ namespace Acme.Http;
 public static class ResultHttpExtensions
 {
     public static EndpointResult<Ok<T>> ToOk<T>(this Result<T> result) =>
-        new(result.IsSuccess ? TypedResults.Ok(result.Value) : ToProblem(result));
+        new(
+            result switch
+            {
+                Success<T>(var value) => TypedResults.Ok(value),
+                Failure failure => ToProblem(failure),
+            }
+        );
 
     public static EndpointResult<Created<T>> ToCreated<T>(
         this Result<T> result,
         Func<T, string> location
     ) =>
         new(
-            result.IsSuccess
-                ? TypedResults.Created(location(result.Value), result.Value)
-                : ToProblem(result)
+            result switch
+            {
+                Success<T>(var value) => TypedResults.Created(location(value), value),
+                Failure failure => ToProblem(failure),
+            }
         );
 
-    private static IResult ToProblem(Result result)
+    private static IResult ToProblem(Failure failure)
     {
-        if (result.Error.Category == ErrorCategory.Validation)
+        if (failure.Error.Category == ErrorCategory.Validation)
         {
-            var fields = result
+            var fields = failure
                 .Errors.GroupBy(e => e.Code)
                 .ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
             return TypedResults.UnprocessableEntity<ProblemDetails>(
@@ -37,12 +45,12 @@ public static class ResultHttpExtensions
                 {
                     Status = StatusCodes.Status422UnprocessableEntity,
                     // Stable code for the SSR layer to translate, alongside the per-field map above.
-                    Extensions = { ["errorCode"] = result.Error.Code },
+                    Extensions = { ["errorCode"] = failure.Error.Code },
                 }
             );
         }
 
-        var (status, title) = result.Error.Category switch
+        var (status, title) = failure.Error.Category switch
         {
             ErrorCategory.NotFound => (StatusCodes.Status404NotFound, "Session not found"),
             ErrorCategory.Conflict => (StatusCodes.Status409Conflict, "Invalid session state"),
@@ -53,13 +61,13 @@ public static class ResultHttpExtensions
         {
             Status = status,
             Title = title,
-            Detail = result.Error.Message,
+            Detail = failure.Error.Message,
             // Stable, locale-agnostic identifier the web maps to a localized message; `Detail` stays
             // English for logs and as the SSR fallback for any code without a translation.
-            Extensions = { ["errorCode"] = result.Error.Code },
+            Extensions = { ["errorCode"] = failure.Error.Code },
         };
 
-        return result.Error.Category switch
+        return failure.Error.Category switch
         {
             ErrorCategory.NotFound => TypedResults.NotFound(problem),
             ErrorCategory.Conflict => TypedResults.Conflict(problem),

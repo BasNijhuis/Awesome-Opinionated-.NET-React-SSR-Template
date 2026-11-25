@@ -10,7 +10,7 @@ monolith + React Router SSR frontend).
 
 The work splits in two:
 
-1. **Mechanical rename** — owned by the cross-platform script `setup.cs` (a .NET 10 file-based app;
+1. **Mechanical rename** — owned by the cross-platform script `setup.cs` (a .NET 11 file-based app;
    runs on macOS/Linux/Windows). It renames the namespace/assembly/`.slnx` prefix, the analyzer
    diagnostic prefix, the frontend folder, the Aspire resource names, the database name, and branding
    strings. Don't do this by hand — run the script (`dotnet run setup.cs`, or `./setup.sh` /

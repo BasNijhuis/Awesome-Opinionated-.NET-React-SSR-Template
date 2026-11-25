@@ -1,70 +1,114 @@
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using Acme.DomainAbstractions;
+using Acme.TestSupport;
 
 namespace Acme.DomainAbstractions.Tests;
 
 public sealed class ResultTests
 {
-    [Fact]
-    public void Success_is_successful_and_has_no_error()
-    {
-        var result = Result.Success();
+    private static readonly Error Missing = Error.NotFound("missing", "Nope.");
 
-        result.IsSuccess.Should().BeTrue();
-        result.IsFailure.Should().BeFalse();
-        result.Errors.Should().BeEmpty();
+    [Fact]
+    public void A_value_converts_to_the_success_case()
+    {
+        // Act
+        Result<int> result = 42;
+
+        // Assert
+        result.ShouldSucceed().Should().Be(42);
     }
 
     [Fact]
-    public void Failure_carries_the_error()
+    public void An_error_converts_to_a_failure_with_that_error()
     {
-        var error = Error.Conflict("session_full", "The tavern is full.");
+        // Act
+        Result<int> result = Missing;
 
-        var result = Result.Failure(error);
-
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().Be(error);
-        result.Errors.Should().ContainSingle().Which.Should().Be(error);
+        // Assert
+        var failure = result.ShouldFail();
+        failure.Error.Should().Be(Missing);
+        failure.Errors.Should().ContainSingle().Which.Should().Be(Missing);
     }
 
     [Fact]
-    public void Generic_success_exposes_the_value()
+    public void Errors_convert_to_a_failure_with_all_of_them()
     {
-        var result = Result.Success(42);
-
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(42);
-    }
-
-    [Fact]
-    public void Accessing_value_of_a_failure_throws()
-    {
-        var result = Result<int>.Failure(Error.NotFound("missing", "Nope."));
-
-        result.Invoking(r => r.Value).Should().Throw<InvalidOperationException>();
-    }
-
-    [Fact]
-    public void Accessing_error_of_a_success_throws()
-    {
-        var result = Result.Success();
-
-        result.Invoking(r => r.Error).Should().Throw<InvalidOperationException>();
-    }
-
-    [Fact]
-    public void Validation_failure_keeps_all_field_errors()
-    {
+        // Arrange
         ImmutableArray<Error> errors =
         [
-            Error.Validation("hostName", "Required."),
-            Error.Validation("persona", "Invalid."),
+            Error.Validation("Name", "Name is required."),
+            Error.Validation("Quantity", "Quantity must not be negative."),
         ];
 
-        var result = Result<string>.Failure(errors);
+        // Act
+        Result<string> result = errors;
 
-        result.IsFailure.Should().BeTrue();
-        result.Errors.Should().HaveCount(2);
-        result.Errors.Should().OnlyContain(e => e.Category == ErrorCategory.Validation);
+        // Assert
+        var failure = result.ShouldFail();
+        failure.Errors.Should().Equal(errors);
+        failure.Error.Should().Be(errors[0]);
+    }
+
+    [Fact]
+    public void A_failure_without_errors_throws()
+    {
+        // Act
+        var act = () =>
+        {
+            Result<int> result = ImmutableArray<Error>.Empty;
+            return result;
+        };
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void A_failure_from_a_default_array_throws()
+    {
+        // Act
+        var act = () =>
+        {
+            Result<int> result = default(ImmutableArray<Error>);
+            return result;
+        };
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void A_switch_expression_over_both_cases_needs_no_discard()
+    {
+        // Arrange
+        Result<int> result = 21;
+
+        // Act: compiles only because the two cases are exhaustive (CS8509 is an error, ADR-0020).
+        var doubled = result switch
+        {
+            Success<int>(var value) => value * 2,
+            Failure failure => -failure.Errors.Length,
+        };
+
+        // Assert
+        doubled.Should().Be(42);
+    }
+
+    [Fact]
+    public void A_default_result_matches_neither_case()
+    {
+        // Act
+        var result = default(Result<int>);
+
+        // Assert: why code that may only continue after a success matches Success<T>, never `is not Failure`.
+        (result is Success<int>).Should().BeFalse();
+        (result is Failure).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Result_is_a_union()
+    {
+        typeof(Result<int>).Should().Implement<IUnion>();
     }
 }

@@ -27,7 +27,7 @@ public sealed class CqrsRegistrationValidationTests
         public Task<Result<string>> HandleAsync(
             LooseQuery query,
             CancellationToken cancellationToken
-        ) => Task.FromResult(Result.Success("loose"));
+        ) => Task.FromResult<Result<string>>("loose");
     }
 
     [Fact]

@@ -1,6 +1,6 @@
 # GEMINI.md
 
-This repo is the **Awesome Opinionated Template** — a .NET Aspire modular monolith (.NET 10, C#) with
+This repo is the **Awesome Opinionated Template** — a .NET Aspire modular monolith (.NET 11, C#) with
 a React Router SSR frontend (pnpm, TypeScript). The architecture and its rules live in
 [`docs/adr/`](docs/adr/README.md) and [`docs/instructions/`](docs/instructions/README.md); boundaries
 are enforced by Roslyn analyzers and NetArchTest, so read those before changing structure.
@@ -18,7 +18,7 @@ When the user wants to **initialize / bootstrap / rebrand** this template into t
 follow the canonical, step-by-step instructions in **[`docs/template-setup.md`](docs/template-setup.md)**
 and execute them in order. The split:
 
-1. **Mechanical rename** — run the cross-platform script `setup.cs` (a .NET 10 file-based app for
+1. **Mechanical rename** — run the cross-platform script `setup.cs` (a .NET 11 file-based app for
    macOS/Linux/Windows): `dotnet run setup.cs` (interactive), `--dry-run` to preview, `--yes` + flags
    for non-interactive. It renames the namespace/assembly/`.slnx` prefix, the analyzer diagnostic
    prefix, the frontend folder, the Aspire resource names, the database, and the title. Don't do this

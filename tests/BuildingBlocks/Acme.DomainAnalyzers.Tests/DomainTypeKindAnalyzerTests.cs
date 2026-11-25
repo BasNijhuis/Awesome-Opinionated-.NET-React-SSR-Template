@@ -1,4 +1,5 @@
 using Acme.DomainAnalyzers;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 
@@ -72,6 +73,70 @@ public sealed class DomainTypeKindAnalyzerTests
     }
 
     [Fact]
+    public async Task Passes_On_Union()
+    {
+        // A C# 15 union compiles to a struct, but it is an immutable closed set of cases (ADR-0020).
+        await VerifyEnforcedAsync(
+            """
+            public sealed record Cat(string Name);
+            public sealed record Dog(string Name);
+            public union Pet(Cat, Dog);
+            """,
+            onDotNet11: true
+        );
+    }
+
+    [Fact]
+    public async Task Fires_On_PlainStruct_Next_To_A_Union()
+    {
+        // The union exemption is keyed on the type being a union, not on structs in general.
+        await VerifyEnforcedAsync(
+            """
+            public sealed record Ok<T>(T Value);
+            public sealed record Problem(string Message);
+            public union Outcome<T>(Ok<T>, Problem);
+
+            public struct {|ACME002:Point|}
+            {
+                public int X { get; init; }
+            }
+            """,
+            onDotNet11: true
+        );
+    }
+
+    [Fact]
+    public async Task Fires_On_HandWritten_Union_Types()
+    {
+        // [Union] + IUnion make Roslyn report a type as a union, but only the `union` keyword gives the
+        // compiler-built, immutable shape the exemption is for.
+        await VerifyEnforcedAsync(
+            """
+            using System.Runtime.CompilerServices;
+
+            public sealed record Cat(string Name);
+
+            [Union]
+            public sealed class {|ACME002:PetBox|} : IUnion
+            {
+                public PetBox(Cat cat) => Value = cat;
+
+                public object? Value { get; }
+            }
+
+            [Union]
+            public struct {|ACME002:PetSlot|} : IUnion
+            {
+                public PetSlot(Cat cat) => Value = cat;
+
+                public object? Value { get; }
+            }
+            """,
+            onDotNet11: true
+        );
+    }
+
+    [Fact]
     public async Task Passes_On_StaticClass()
     {
         // A static class is a utility holder and cannot be a record — exempt.
@@ -138,19 +203,38 @@ public sealed class DomainTypeKindAnalyzerTests
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
-    private static async Task VerifyEnforcedAsync(string source)
+    private static async Task VerifyEnforcedAsync(string source, bool onDotNet11 = false)
     {
         var test = new CSharpAnalyzerTest<DomainTypeKindAnalyzer, DefaultVerifier>
         {
             TestCode = source,
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            ReferenceAssemblies = onDotNet11
+                ? new ReferenceAssemblies("net11.0")
+                : ReferenceAssemblies.Net.Net80,
         };
+
+        // Unions need the .NET 11 BCL (UnionAttribute / IUnion) and the testing package has no
+        // net11.0 preset, so those tests compile against the framework this test host runs on.
+        if (onDotNet11)
+        {
+            test.TestState.AdditionalReferences.AddRange(RunningFramework.Value);
+        }
 
         // Opt the analyzed compilation in to enforcement via a global analyzer config.
         test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", GlobalConfig));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
+
+    private static readonly Lazy<MetadataReference[]> RunningFramework = new(() =>
+    {
+        var frameworkDirectory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+        return ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
+            .Split(Path.PathSeparator)
+            .Where(path => Path.GetDirectoryName(path) == frameworkDirectory)
+            .Select(path => (MetadataReference)MetadataReference.CreateFromFile(path))
+            .ToArray();
+    });
 
     private const string GlobalConfig = """
         is_global = true

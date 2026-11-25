@@ -11,5 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Greetings.Domain\Acme.Modules.Greetings.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Modules\Acme.Modules.Greetings.Domain.Contracts\Acme.Modules.Greetings.Domain.Contracts.csproj" />
+    <ProjectReference Include="..\..\Acme.TestSupport\Acme.TestSupport.csproj" />
   </ItemGroup>
 </Project>

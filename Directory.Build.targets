@@ -3,8 +3,8 @@
     Domain analyzers (ADR-0013, ADR-0017): one analyzer-assembly reference for every first-party
     project, keyed off the naming convention so individual .csproj files don't repeat it. The analyzer
     project itself (`*.DomainAnalyzers`) and the test projects (`*.Tests`) opt out — there's no
-    self-reference, and test code reads `Result<T>.Value` after fluent assertions / on statically-valid
-    fixtures, which ACME007 can't see as guards. Each rule below is gated by its own opt-in flag.
+    self-reference, and the rules guard production code. Each rule below is gated by its own opt-in
+    flag.
   -->
   <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.DomainAnalyzers'))">
     <ProjectReference
@@ -41,24 +41,5 @@
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
     <CompilerVisibleProperty Include="EnforceEfEntityBoundary" />
-  </ItemGroup>
-
-  <!--
-    Result rules (ADR-0013): the whole codebase.
-      ACME007 (EnforceResultValueGuard)         reading `Result<T>.Value` is forbidden unless a success
-        check on the same result dominates the read (early-return/throw on IsFailure, or an
-        if (IsSuccess)/ternary success branch) — Value throws on a failed result.
-      ACME008 (EnforceResultImplicitConversion) in a `return`, prefer the implicit Result<T> conversion
-        (`return value;` / `return error;`) over wrapping the same value in Result.Success/Result.Failure.
-    Both apply everywhere a Result is consumed/produced, not just the command/query handlers.
-  -->
-  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.DomainAnalyzers'))">
-    <EnforceResultValueGuard>true</EnforceResultValueGuard>
-    <EnforceResultImplicitConversion>true</EnforceResultImplicitConversion>
-  </PropertyGroup>
-
-  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.DomainAnalyzers'))">
-    <CompilerVisibleProperty Include="EnforceResultValueGuard" />
-    <CompilerVisibleProperty Include="EnforceResultImplicitConversion" />
   </ItemGroup>
 </Project>

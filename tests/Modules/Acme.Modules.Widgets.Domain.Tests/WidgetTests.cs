@@ -1,6 +1,7 @@
 using Acme.DomainAbstractions;
 using Acme.Kernel.Domain.DomainEvents;
 using Acme.Modules.Widgets.Domain.Contracts;
+using Acme.TestSupport;
 
 namespace Acme.Modules.Widgets.Domain.Tests;
 
@@ -13,8 +14,7 @@ public sealed class WidgetTests
         var result = Widget.Create(new CreateWidgetSpec("  Gadget  ", 7));
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        var widget = result.Value;
+        var widget = result.ShouldSucceed();
         widget.Name.Should().Be("Gadget");
         widget.Quantity.Should().Be(7);
         widget.Id.Value.Should().NotBe(Guid.Empty);
@@ -28,9 +28,9 @@ public sealed class WidgetTests
         var result = Widget.Create(new CreateWidgetSpec("   ", 1));
 
         // Assert — an expected, recoverable failure (Validation), not an exception
-        result.IsFailure.Should().BeTrue();
-        result.Error.Category.Should().Be(ErrorCategory.Validation);
-        result.Error.Code.Should().Be("Name");
+        var error = result.ShouldFail().Error;
+        error.Category.Should().Be(ErrorCategory.Validation);
+        error.Code.Should().Be("Name");
     }
 
     [Fact]
@@ -53,15 +53,15 @@ public sealed class WidgetTests
     public void AdjustQuantity_returns_a_new_instance_and_leaves_the_original_unchanged()
     {
         // Arrange
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5)).Value;
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5)).ShouldSucceed();
 
         // Act
         var result = widget.AdjustQuantity(3);
 
         // Assert — immutable transition: a new instance, the original untouched (#23)
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Quantity.Should().Be(8);
-        result.Value.Should().NotBeSameAs(widget);
+        var adjusted = result.ShouldSucceed();
+        adjusted.Quantity.Should().Be(8);
+        adjusted.Should().NotBeSameAs(widget);
         widget.Quantity.Should().Be(5);
     }
 
@@ -69,10 +69,10 @@ public sealed class WidgetTests
     public void AdjustQuantity_raises_a_WidgetQuantityAdjusted_event_with_the_before_and_after()
     {
         // Arrange
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5)).Value;
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 5)).ShouldSucceed();
 
         // Act
-        var adjusted = widget.AdjustQuantity(-2).Value;
+        var adjusted = widget.AdjustQuantity(-2).ShouldSucceed();
 
         // Assert
         var raised = adjusted.DomainEvents.OfType<WidgetQuantityAdjusted>().Single();
@@ -86,15 +86,15 @@ public sealed class WidgetTests
     public void AdjustQuantity_rejects_an_adjustment_that_would_go_negative()
     {
         // Arrange
-        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 1)).Value;
+        var widget = Widget.Create(new CreateWidgetSpec("Gadget", 1)).ShouldSucceed();
 
         // Act
         var result = widget.AdjustQuantity(-5);
 
         // Assert — an expected, recoverable failure (Conflict), not an exception
-        result.IsFailure.Should().BeTrue();
-        result.Error.Category.Should().Be(ErrorCategory.Conflict);
-        result.Error.Code.Should().Be("widget_quantity_negative");
+        var error = result.ShouldFail().Error;
+        error.Category.Should().Be(ErrorCategory.Conflict);
+        error.Code.Should().Be("widget_quantity_negative");
     }
 
     private sealed record WidgetState(

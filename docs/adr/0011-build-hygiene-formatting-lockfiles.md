@@ -15,7 +15,7 @@ Centralize build conventions in `Directory.Build.props` and add standard tooling
 
 | Concern | Choice |
 |---------|--------|
-| **Target framework** | `<TargetFramework>net10.0</TargetFramework>` defined **once** in `Directory.Build.props`; removed from every project. |
+| **Target framework** | `<TargetFramework>net11.0</TargetFramework>` defined **once** in `Directory.Build.props`; removed from every project. |
 | **Restore determinism** | `<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>`; each project commits a `packages.lock.json`. |
 | **Formatting** | **CSharpier** as a local dotnet tool (`.config/dotnet-tools.json`); `dotnet csharpier format .`. EF migrations excluded via `.csharpierignore`. |
 

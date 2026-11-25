@@ -1,24 +1,21 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.5.4">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Aspire 13.5's SDK defaults AspireUseCliBundle to false and then warns about it (ASPIRE010);
-         suppressing is the sanctioned way to stay off the bundle. AspireUseCliBundle=true does work
-         (it provisions the bundle from the aspire.cli package, no CLI on PATH needed), but it drops
-         Aspire.Dashboard.Sdk/Hosting.Orchestration from packages.lock.json in favour of a ~670 MB
-         package that unpacks to ~290 MB in ~/.aspire — unpinned, and missed by CI's lock-file cache
-         key. The RID packages we keep are ~226 MB, restored and cached like everything else. -->
-    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
     <UserSecretsId>f76d6d52-ddb8-4c73-8f1f-90bd1f438043</UserSecretsId>
+    <!-- Aspire 17 requires the Aspire CLI bundle for C# AppHosts (ASPIRE013, no opt-out). DnxPinned
+         fetches it through `dnx aspire.cli@<this AppHost's Aspire version>` instead of whatever `aspire`
+         is on PATH, so no global CLI install is needed and a stale one can't cause version skew. -->
+    <AspireCliInvocationMode>DnxPinned</AspireCliInvocationMode>
   </PropertyGroup>
 
+  <!-- A plain Microsoft.NET.Sdk AppHost: Aspire 17 deprecates Aspire.AppHost.Sdk (ASPIRE012). The API is
+       registered by path with AddDotnetProject, so there is no ProjectReference to it. -->
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" />
     <PackageReference Include="Aspire.Hosting.JavaScript" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Services\Acme.Api\Acme.Api.csproj" />
   </ItemGroup>
 </Project>

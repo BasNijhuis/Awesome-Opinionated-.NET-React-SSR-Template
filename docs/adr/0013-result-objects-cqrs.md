@@ -3,11 +3,15 @@
 - **Status:** Accepted
 - **Date:** 2026-06-21
 - **Supersedes:** [ADR-0008](./0008-custom-request-dispatch.md)
-- **Amended by:** [ADR-0019](./0019-reflection-free-dispatch.md)
+- **Amended by:** [ADR-0019](./0019-reflection-free-dispatch.md), [ADR-0020](./0020-result-as-csharp-union.md)
 
 > **Amended:** the dispatch mechanism changed in [ADR-0019](./0019-reflection-free-dispatch.md) — handlers and validators are now invoked through
 > closed-generic adapters resolved by keyed DI, so no reflection remains on the dispatch path.
 > Everything else below still holds.
+>
+> **Amended:** §1 changed in [ADR-0020](./0020-result-as-csharp-union.md) — `Result<T>` is now a C# union of
+> `Success<T>` and `Failure`, consumed by pattern matching; `IsSuccess`/`IsFailure`/`Value` and the
+> non-generic `Result` are gone.
 
 ## Context
 
@@ -80,6 +84,7 @@ Endpoints translate a `Result` to `TypedResults` by category — `NotFound` → 
 
 - [ADR-0008: Custom request dispatch](./0008-custom-request-dispatch.md) (superseded)
 - [ADR-0019: Reflection-free request and domain-event dispatch](./0019-reflection-free-dispatch.md) (amends this ADR)
+- [ADR-0020: `Result<T>` as a C# union](./0020-result-as-csharp-union.md) (amends §1)
 - [ADR-0002: Clean Architecture + vertical slices](./0002-clean-architecture-vertical-slices.md)
 - [ADR-0010: OpenAPI contract & generated clients](./0010-openapi-contract-generated-clients.md)
 - [backend-development.md](../instructions/backend-development.md) · [testing.md](../instructions/testing.md)

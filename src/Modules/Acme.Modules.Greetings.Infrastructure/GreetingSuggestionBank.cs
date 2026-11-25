@@ -29,24 +29,19 @@ public static class GreetingSuggestionBank
     private static IReadOnlyList<BilingualSuggestion> LoadFromResource()
     {
         var assembly = typeof(GreetingSuggestionBank).Assembly;
-        var resourceName =
-            assembly
-                .GetManifestResourceNames()
-                .FirstOrDefault(n =>
-                    n.EndsWith("greeting-suggestions.json", StringComparison.Ordinal)
-                )
+        var resourceName = assembly
+            .GetManifestResourceNames()
+            .FirstOrDefault(n => n.EndsWith("greeting-suggestions.json", StringComparison.Ordinal))
             ?? throw new InvalidOperationException(
                 "Embedded suggestion bank 'greeting-suggestions.json' not found."
             );
 
-        using var stream =
-            assembly.GetManifestResourceStream(resourceName)
+        using var stream = assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException(
                 $"Could not open resource stream '{resourceName}'."
             );
 
-        var bank =
-            JsonSerializer.Deserialize<SuggestionBankFile>(stream, JsonOptions)
+        var bank = JsonSerializer.Deserialize<SuggestionBankFile>(stream, JsonOptions)
             ?? throw new InvalidOperationException("Suggestion bank deserialized to null.");
 
         return bank.Suggestions;

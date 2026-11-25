@@ -23,25 +23,19 @@ public class NotificationsHubTests
             TaskCreationOptions.RunContinuationsAsynchronously
         );
         var connection = new HubConnectionBuilder()
-            .WithUrl(
-                new Uri(factory.Server.BaseAddress!, "/hubs/notifications"),
-                options =>
-                {
-                    options.HttpMessageHandlerFactory = _ => factory.Server.CreateHandler();
-                }
-            )
+            .WithUrl(new Uri(factory.Server.BaseAddress!, "/hubs/notifications"), options =>
+            {
+                options.HttpMessageHandlerFactory = _ => factory.Server.CreateHandler();
+            })
             .Build();
 
-        connection.On<NotificationPayload>(
-            NotificationHubTopics.NotificationReceived,
-            payload =>
+        connection.On<NotificationPayload>(NotificationHubTopics.NotificationReceived, payload =>
+        {
+            if (payload is not null)
             {
-                if (payload is not null)
-                {
-                    received.TrySetResult(payload);
-                }
+                received.TrySetResult(payload);
             }
-        );
+        });
 
         await connection.StartAsync(cancellationToken);
         await connection.InvokeAsync("JoinChannel", "greetings", cancellationToken);

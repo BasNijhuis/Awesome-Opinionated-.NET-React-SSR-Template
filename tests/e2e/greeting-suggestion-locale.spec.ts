@@ -14,6 +14,7 @@ test("greeting suggestions follow the cookie locale", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "nl");
 
   // The suggestion (served by the backend) is now Dutch, proving the cookie reached the API.
+  // biome-ignore lint/performance/useDomNodeTextContent: Playwright's Locator.innerText (rendered text), not the DOM property.
   const suggestion = await page.getByTestId("greeting-suggestion").innerText();
   expect(DUTCH.some((phrase) => suggestion.includes(phrase))).toBe(true);
 });

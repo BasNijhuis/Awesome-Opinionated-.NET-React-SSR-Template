@@ -22,7 +22,7 @@ The **shared kernel** (`Acme.Kernel.*`) holds only what is shared — no capabil
 
 **Boundary rules (build-enforced):** a module references only the shared kernel/building blocks + other modules' contract projects (`.Application.Contracts`/`.Domain.Contracts`) — never another module's internals. Within a module, `.Application.Contracts` references `.Domain.Contracts` (input spec ports) but never the module `.Domain` ([ADR-0018](../adr/0018-domain-spec-interfaces-contract-layering.md)). Cross-module reactions go through the dispatcher, an in-process domain event, or a kernel port. The kernel depends on no module; `Domain` depends only on `DomainAbstractions`. Never reference EF/ASP.NET/HTTP from `Domain`.
 
-**Domain immutability (build-enforced, [ADR-0017](../adr/0017-immutable-domain-enforced-by-analyzer.md)):** every Domain type is immutable — **no `set` accessor anywhere** (`init`/`readonly` only; collections exposed as `IReadOnly…`), and types are `record`/`record struct`/`interface`/`enum` (no plain `class`/`struct`, except `static` utilities + framework-derived classes like `Exception`/`JsonConverter<T>`). Aggregates are `sealed record`s deriving from **`AggregateRoot<TSelf, TId>`** (`public sealed record Widget : AggregateRoot<Widget, WidgetId>`, with `public override WidgetId Id { get; }`); a transition returns a **new** instance (`var next = this with { … }; return next.RaiseEvent(…);`) and the handler reassigns it (`widget = result.Value; repository.Update(widget);`). The domain-events outbox is immutable too — `RaiseEvent` and `DequeueEvents()` (returns `(events, cleared)`) are functional; the unit of work tracks by `AggregateRoot.HasSameIdentity` — supplied once by the generic base as *same self type + same id*, never hand-written per aggregate — and swaps in cleared copies. Mutable enumerable types (`List<>`/`Dictionary<>`/`T[]`/…) are banned in Domain signatures/members — use `IReadOnly…`/`ImmutableArray<>`. The `Acme.DomainAnalyzers` analyzer fails the build (`ACME001` mutable state · `ACME002` record-only · `ACME003` no mutable enumerables · `ACME004` a `TSelf` *method* type argument must be the calling type · `ACME005` no **public `init`** · `ACME009` a `TSelf` *base-type* argument must be the declaring type) on any violation in a Domain project.
+**Domain immutability (build-enforced, [ADR-0017](../adr/0017-immutable-domain-enforced-by-analyzer.md)):** every Domain type is immutable — **no `set` accessor anywhere** (`init`/`readonly` only; collections exposed as `IReadOnly…`), and types are `record`/`record struct`/`union`/`interface`/`enum` (no plain `class`/`struct`, except `static` utilities + framework-derived classes like `Exception`/`JsonConverter<T>`). Aggregates are `sealed record`s deriving from **`AggregateRoot<TSelf, TId>`** (`public sealed record Widget : AggregateRoot<Widget, WidgetId>`, with `public override WidgetId Id { get; }`); a transition returns a **new** instance (`var next = this with { … }; return next.RaiseEvent(…);`) and the handler continues with the instance from the success case (`Success<Widget>(var updated) => … repository.Update(updated) …`). The domain-events outbox is immutable too — `RaiseEvent` and `DequeueEvents()` (returns `(events, cleared)`) are functional; the unit of work tracks by `AggregateRoot.HasSameIdentity` — supplied once by the generic base as *same self type + same id*, never hand-written per aggregate — and swaps in cleared copies. Mutable enumerable types (`List<>`/`Dictionary<>`/`T[]`/…) are banned in Domain signatures/members — use `IReadOnly…`/`ImmutableArray<>`. The `Acme.DomainAnalyzers` analyzer fails the build (`ACME001` mutable state · `ACME002` records/unions only · `ACME003` no mutable enumerables · `ACME004` a `TSelf` *method* type argument must be the calling type · `ACME005` no **public `init`** · `ACME009` a `TSelf` *base-type* argument must be the declaring type) on any violation in a Domain project.
 
 **EF entity boundary (build-enforced, `ACME006`):** in `*.Infrastructure` projects, the same analyzer forbids mapping a **domain type** (anything in a `.Domain`/`.DomainAbstractions` assembly/namespace) as an EF entity — i.e. as the type argument of `DbSet<T>`/`Set<T>`/`Entity`/`HasOne`/`HasMany`/`OwnsOne`/`OwnsMany`/`ComplexProperty`/`Navigation`, or `Entity(typeof(T))`. Map the Application-layer `*Entity` POCO instead (ADR-0016/0018). Value-object `Property(…).HasConversion(…)` mappings are exempt. Auto-wired via `Directory.Build.targets` (`EnforceEfEntityBoundary` on `.Infrastructure`).
 
@@ -76,7 +76,7 @@ The API host calls `builder.Services.ValidateCqrsRegistrations()` after every mo
 - **While an endpoint returns a bare `IResult`, OpenAPI can't infer its responses — annotate explicitly:** `.Produces<T>(StatusCodes.Status200OK)` (or `Status201Created`), `.ProducesValidationProblem()` for inline 400s, and `.ProducesDomainProblems()` for the shared 404/409/422 bodies. Once an endpoint returns a typed `Results<…>` union those success/error `.Produces*` calls fall away — the union supplies the metadata. Always keep `.WithName(nameof(Handler))` so the generated TS client gets a clean function name (the Kiota C# client names follow the URL paths).
 - **The OpenAPI document and the C# client are build artifacts, not committed.** The C# DTOs and endpoints are the single source of truth:
   - `dotnet build` exports `src/Services/Acme.Api/openapi/v1.json` (via `Microsoft.Extensions.ApiDescription.Server`, `--file-name v1`). The file is **git-ignored**, regenerated every build, never hand-edited. Generation runs in-memory — no database needed.
-  - `src/Misc/Acme.ApiClient` generates a strongly-typed client (`AcmeApiClient`, Microsoft Kiota via the pinned `kiota` local tool) from that spec for the API tests and any other consumer. Generated code lives in `obj/Kiota/` (git-ignored); build it with `AcmeApiClientFactory.Create(httpClient)`. It builds after the API via a build-order-only project reference.
+  - `src/Misc/Acme.ApiClient` generates a strongly-typed client (`AcmeApiClient`, Microsoft Kiota via the pinned `kiota` local tool) from that spec for the API tests and any other consumer. Generated code lives in `obj/Kiota/` (git-ignored); build it with `AcmeApiClientFactory.Create(httpClient)`. It builds after the API via a build-order-only project reference. The tool manifest sets `rollForward: true` for `kiota` because Kiota ships no `net11.0` build, so it runs on the .NET 11 runtime.
 - **After changing a DTO or endpoint:** just rebuild — the spec and C# client regenerate. The frontend TypeScript client regenerates separately.
 
 See [ADR-0010](../adr/0010-openapi-contract-generated-clients.md) for the full rationale.
@@ -96,7 +96,7 @@ public sealed class CreateGreetingHandler : ICommandHandler<CreateGreetingComman
         CreateGreetingCommand command,
         CancellationToken cancellationToken)
     {
-        // ... return Result.Success(new CreateGreetingResult { ... });
+        // ... return new CreateGreetingResult { ... };   // implicit conversion to the success case
     }
 }
 ```
@@ -107,11 +107,32 @@ Endpoint — map the `Result` to typed results by category (no exceptions for ex
 app.MapPost("/api/greetings", async (CreateGreetingCommand cmd, IRequestDispatcher dispatcher, CancellationToken ct) =>
 {
     var result = await dispatcher.SendAsync(cmd, ct);
-    return result.ToHttpResult(value => TypedResults.Created($"/api/greetings/{value.GreetingId}", value));
+    return result.ToCreated(value => $"/api/greetings/{value.Id.Value}");
 });
 ```
 
 A validation failure short-circuits in the dispatcher as a failed `Result` (category `Validation` → 422) — it is **not** thrown (see Error handling below).
+
+### Matching on a result
+
+`Result<T>` is a C# union of `Success<T>` (the value) and `Failure` (one or more `Error`s) — see [ADR-0020](../adr/0020-result-as-csharp-union.md). Handlers produce one with implicit conversions (`return value;`, `return error;`, `return errors;`) and consume one by matching on the cases:
+
+```csharp
+// Exhaustive: drop either arm and the build fails (CS8509 is an error).
+var response = result switch
+{
+    Success<WidgetDto>(var widget) => Describe(widget),
+    Failure failure => failure.Error.Message,   // failure.Errors holds all of them
+};
+
+// Continue only after a success: match the success case.
+if (result is Success<Greeting>(var greeting))
+    repository.Add(greeting);
+```
+
+- Prefer the `switch` **expression**: the compiler checks it covers both cases. A `switch` **statement** isn't checked.
+- Never gate on `is not Failure` — `default(Result<T>)` holds neither case, so it would slip through. Match `Success<T>` instead.
+- Don't read the union's compiler-generated `Value`: it's the *case* (`object?`), not the success value.
 
 ## Persistence (PostgreSQL)
 
@@ -135,9 +156,7 @@ internal sealed class GetGreetingHandler(IGreetingReader reader)
     public async Task<Result<GreetingDto>> HandleAsync(GetGreetingQuery query, CancellationToken ct)
     {
         var dto = await reader.GetAsync(query.GreetingId, ct);
-        return dto is null
-            ? Result<GreetingDto>.Failure(GreetingErrors.NotFound(query.GreetingId))
-            : Result.Success(dto);
+        return dto is null ? GreetingErrors.NotFound(query.GreetingId) : dto;
     }
 }
 ```
@@ -158,22 +177,27 @@ internal sealed class AdjustQuantityHandler(
     {
         var widget = await repository.GetByIdAsync(command.WidgetId, cancellationToken);
         if (widget is null)
-            return Result<WidgetDto>.Failure(WidgetErrors.NotFound(command.WidgetId));
+            return WidgetErrors.NotFound(command.WidgetId);
 
-        var adjusted = widget.AdjustQuantity(command.Delta);
-        if (adjusted.IsFailure)
-            return Result<WidgetDto>.Failure(adjusted.Errors);   // propagate domain error
+        return widget.AdjustQuantity(command.Delta) switch
+        {
+            Success<Widget>(var adjusted) => await PersistAsync(adjusted, cancellationToken),
+            Failure failure => failure,                        // propagate the domain error
+        };
+    }
 
-        repository.Update(adjusted.Value);                 // sync — stages only
+    private async Task<WidgetDto> PersistAsync(Widget adjusted, CancellationToken cancellationToken)
+    {
+        repository.Update(adjusted);                           // sync — stages only
         await unitOfWork.SaveChangesAsync(cancellationToken);  // async — dispatches events + commits
 
-        var dto = await reader.GetAsync(command.WidgetId, cancellationToken);  // post-commit view
-        return Result.Success(dto!);
+        var dto = await reader.GetAsync(adjusted.Id, cancellationToken);  // post-commit view
+        return dto!;
     }
 }
 ```
 
-- Missing entity → `WidgetErrors.NotFound(...)` (category `NotFound`). Domain rule failures come back from the aggregate as a failed `Result` — propagate `outcome.Errors`.
+- Missing entity → `WidgetErrors.NotFound(...)` (category `NotFound`). Domain rule failures come back from the aggregate as the `Failure` case — propagate it with a `Failure failure => failure` arm.
 - Reserve exceptions for **bugs and infrastructure** (broken invariants, DB faults), never for expected outcomes.
 - `Add` / `Update` are **synchronous** — they queue pending changes on the scoped repository.
 - `SaveChangesAsync` (the coordinating `AcmeUnitOfWork`) **dispatches domain events, then commits every write context in one transaction** — see [Domain events & cross-aggregate reactions](#domain-events--cross-aggregate-reactions) below.

@@ -41,10 +41,11 @@ whole stack end to end. Use them as the recipe for your own capabilities, then d
 
 ### Prerequisites
 
-- **.NET 10 SDK**
+- **.NET 11 SDK**
 - **Docker Desktop** (for the PostgreSQL container)
-- **Node.js 24+** and **pnpm 12+** (`corepack enable`)
-- **Aspire CLI** (`dotnet tool install -g aspire.cli`)
+- **Node.js 26+** and **pnpm 12+** (`corepack enable`)
+- **Aspire CLI** (optional; `dotnet tool install -g aspire.cli`). The AppHost fetches the matching CLI
+  bundle itself on first run, so `dotnet run` works without it.
 
 ### Run the whole stack
 
@@ -138,7 +139,7 @@ or another module's `.Application.Contracts`. Adding a module is a documented re
 
 - **The domain is immutable, by build error.** A Roslyn analyzer (`Acme.DomainAnalyzers`) is auto-wired
   into every `*.Domain` project and fails the build on mutable state. Seven rules, all errors:
-  `ACME001` mutable state · `ACME002` records-only · `ACME003` no mutable enumerables ·
+  `ACME001` mutable state · `ACME002` records/unions only · `ACME003` no mutable enumerables ·
   `ACME004` a `TSelf` method type argument must be the calling type · `ACME005` no public `init` ·
   `ACME006` a domain type must not be mapped as an EF entity (map an Application `*Entity` instead) ·
   `ACME009` a `TSelf` base-type argument must be the declaring type (`Widget : AggregateRoot<Widget, WidgetId>`).
@@ -208,7 +209,7 @@ All five share one source of truth: [`docs/template-setup.md`](docs/template-set
 
 ### The rename script (run directly, if you prefer)
 
-The mechanical rename lives in a cross-platform script (macOS, Linux, Windows; needs only the .NET 10
+The mechanical rename lives in a cross-platform script (macOS, Linux, Windows; needs only the .NET 11
 SDK). The skill runs it for you, but you can run it yourself:
 
 ```bash

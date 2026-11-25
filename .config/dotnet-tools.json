@@ -3,18 +3,18 @@
   "isRoot": true,
   "tools": {
     "csharpier": {
-      "version": "1.3.0",
+      "version": "1.4.1",
       "commands": [
         "csharpier"
       ],
       "rollForward": false
     },
     "microsoft.openapi.kiota": {
-      "version": "1.36.1",
+      "version": "1.39.0",
       "commands": [
         "kiota"
       ],
-      "rollForward": false
+      "rollForward": true
     }
   }
 }

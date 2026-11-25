@@ -38,7 +38,7 @@ Do **not** maintain a parallel legacy `.sln` file.
 ### Positive
 
 - Cleaner XML structure; easier to merge in git.
-- Default for .NET 10 tooling going forward.
+- Default for .NET 10+ tooling going forward.
 - Solution folders (`/src/`, `/tests/`) mirror repo layout.
 
 ### Negative

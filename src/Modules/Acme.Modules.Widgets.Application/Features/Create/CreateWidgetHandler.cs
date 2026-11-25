@@ -16,15 +16,18 @@ internal sealed class CreateWidgetHandler(
     public async Task<Result<CreateWidgetResult>> HandleAsync(
         CreateWidgetCommand command,
         CancellationToken cancellationToken
+    ) =>
+        Widget.Create(command) switch
+        {
+            Success<Widget>(var widget) => await PersistAsync(widget, cancellationToken),
+            Failure failure => failure, // propagate the domain rule failure
+        };
+
+    private async Task<CreateWidgetResult> PersistAsync(
+        Widget widget,
+        CancellationToken cancellationToken
     )
     {
-        var created = Widget.Create(command);
-        if (created.IsFailure)
-        {
-            return created.Errors; // propagate the domain rule failure
-        }
-
-        var widget = created.Value;
         repository.Add(widget);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

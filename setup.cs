@@ -1,6 +1,6 @@
 // Cross-platform template setup script (macOS / Linux / Windows).
 //
-// Run from the repo root with the .NET 10 SDK (already prerequisite #1):
+// Run from the repo root with the .NET 11 SDK (already prerequisite #1):
 //
 //     dotnet run setup.cs                 # interactive
 //     dotnet run setup.cs -- --dry-run    # show planned changes, write nothing
@@ -154,11 +154,8 @@ var api = Ask("api", "Aspire API resource name", $"{kebab}-api", ValidateKebab);
 // The db name doubles as the Aspire resource name in AddDatabase(...), which only permits
 // ASCII letters, digits and hyphens (ASPIRE006) — so it must be kebab, never snake_case.
 var db = Ask("db", "Database / Aspire resource name (kebab)", kebab, ValidateKebab);
-var dbPassword = Ask(
-    "db-password",
-    "Local-dev Postgres password (local only)",
-    $"{kebab}-dev",
-    _ => null
+var dbPassword = Ask("db-password", "Local-dev Postgres password (local only)", $"{kebab}-dev", _ =>
+    null
 );
 var title = Ask("title", "Project display title (README H1)", prefix, _ => null);
 
@@ -257,7 +254,7 @@ var repoRoot = (copying && !dryRun) ? targetRoot : sourceRoot;
 // ---------------------------------------------------------------------------------------
 // Replacement plan. Order matters: the most specific lowercase compounds first, then the
 // bare db name (word-boundary), then the all-caps analyzer prefix, then the PascalCase
-// prefix as a plain substring (so AcmeUnitOfWork, Acme_Api, Acme.Kernel all flow through).
+// prefix as a plain substring (so AcmeUnitOfWork, Acme.Api, Acme.Kernel all flow through).
 // ---------------------------------------------------------------------------------------
 var literalReplacements = new List<(string From, string To)>
 {

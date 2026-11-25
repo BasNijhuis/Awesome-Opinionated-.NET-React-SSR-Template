@@ -5,7 +5,7 @@
 
 ## Context
 
-.NET 10 introduces native **Microsoft Testing Platform (MTP)** as an alternative to VSTest. xUnit v3 supports MTP natively with better performance and executable-first test projects. We want tests aligned with the current .NET 10 toolchain.
+.NET 10 introduces native **Microsoft Testing Platform (MTP)** as an alternative to VSTest. xUnit v3 supports MTP natively with better performance and executable-first test projects. We want tests aligned with the current .NET toolchain (.NET 11 at the time of writing).
 
 ## Decision
 
@@ -46,7 +46,7 @@ xUnit v3 analyzers enforce **xUnit1051**: pass `TestContext.Current.Cancellation
 
 ### Positive
 
-- Native `dotnet test` on .NET 10 without VSTest shim.
+- Native `dotnet test` on .NET 10+ without VSTest shim.
 - Faster test runs; modern filter syntax (`--filter-class`, etc.).
 - Aligns with future direction of .NET testing.
 

@@ -7,7 +7,7 @@
 
 This is a multi-service app: PostgreSQL, an ASP.NET Core API, and a Node-based SSR frontend. Running each component manually (separate terminals, hand-wired URLs, no shared telemetry) slows development and hides integration issues.
 
-We target **.NET 10** and want first-class service discovery, health checks, and a unified dashboard during local development.
+We target **.NET 11** and want first-class service discovery, health checks, and a unified dashboard during local development.
 
 ## Decision
 
