@@ -19,8 +19,7 @@ public sealed class RequestDispatcher(
         ArgumentNullException.ThrowIfNull(command);
 
         var requestType = command.GetType();
-        var adapter =
-            serviceProvider.GetKeyedService<ICommandHandlerAdapter<TResult>>(requestType)
+        var adapter = serviceProvider.GetKeyedService<ICommandHandlerAdapter<TResult>>(requestType)
             ?? throw MissingHandler(requestType, typeof(TResult), isQuery: false);
 
         return await DispatchAsync(requestType, command, adapter, cancellationToken)
@@ -35,8 +34,7 @@ public sealed class RequestDispatcher(
         ArgumentNullException.ThrowIfNull(query);
 
         var requestType = query.GetType();
-        var adapter =
-            serviceProvider.GetKeyedService<IQueryHandlerAdapter<TResult>>(requestType)
+        var adapter = serviceProvider.GetKeyedService<IQueryHandlerAdapter<TResult>>(requestType)
             ?? throw MissingHandler(requestType, typeof(TResult), isQuery: true);
 
         return await DispatchAsync(requestType, query, adapter, cancellationToken)

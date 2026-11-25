@@ -17,8 +17,7 @@ public sealed class EfGreetingRepository(GreetingsDbContext db, TrackedAggregate
 
     public async Task<Greeting?> GetByIdAsync(GreetingId id, CancellationToken cancellationToken)
     {
-        var entity =
-            db.Greetings.Local.FirstOrDefault(g => g.Id == id)
+        var entity = db.Greetings.Local.FirstOrDefault(g => g.Id == id)
             ?? await db.Greetings.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
 
         return entity is null ? null : GreetingPersistenceMapper.ToDomain(entity);

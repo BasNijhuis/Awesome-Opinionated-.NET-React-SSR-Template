@@ -154,11 +154,8 @@ var api = Ask("api", "Aspire API resource name", $"{kebab}-api", ValidateKebab);
 // The db name doubles as the Aspire resource name in AddDatabase(...), which only permits
 // ASCII letters, digits and hyphens (ASPIRE006) — so it must be kebab, never snake_case.
 var db = Ask("db", "Database / Aspire resource name (kebab)", kebab, ValidateKebab);
-var dbPassword = Ask(
-    "db-password",
-    "Local-dev Postgres password (local only)",
-    $"{kebab}-dev",
-    _ => null
+var dbPassword = Ask("db-password", "Local-dev Postgres password (local only)", $"{kebab}-dev", _ =>
+    null
 );
 var title = Ask("title", "Project display title (README H1)", prefix, _ => null);
 

@@ -26,8 +26,7 @@ public sealed class InMemoryWidgetRepository(InMemoryWidgetStore store, TrackedA
 
     public void Update(Widget widget)
     {
-        var entity =
-            store.Widgets.GetValueOrDefault(widget.Id)
+        var entity = store.Widgets.GetValueOrDefault(widget.Id)
             ?? throw new InvalidOperationException(
                 $"Widget {widget.Id} is not in the store; load it via {nameof(GetByIdAsync)} before "
                     + $"calling {nameof(Update)}."

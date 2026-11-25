@@ -76,14 +76,11 @@ public sealed class DomainEventDispatcherTests
         // Arrange — two modules each handling the same event
         var cancellationToken = TestContext.Current.CancellationToken;
         var journal = new Journal();
-        await using var provider = BuildProvider(
-            journal,
-            services =>
-            {
-                services.AddDomainEventHandler<FirstThingHandler, ThingHappened>();
-                services.AddDomainEventHandler<SecondThingHandler, ThingHappened>();
-            }
-        );
+        await using var provider = BuildProvider(journal, services =>
+        {
+            services.AddDomainEventHandler<FirstThingHandler, ThingHappened>();
+            services.AddDomainEventHandler<SecondThingHandler, ThingHappened>();
+        });
         var dispatcher = provider.GetRequiredService<IDomainEventDispatcher>();
 
         // Act
@@ -99,9 +96,8 @@ public sealed class DomainEventDispatcherTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var journal = new Journal();
-        await using var provider = BuildProvider(
-            journal,
-            services => services.AddDomainEventHandler<FirstThingHandler, ThingHappened>()
+        await using var provider = BuildProvider(journal, services =>
+            services.AddDomainEventHandler<FirstThingHandler, ThingHappened>()
         );
         var dispatcher = provider.GetRequiredService<IDomainEventDispatcher>();
 
@@ -118,14 +114,11 @@ public sealed class DomainEventDispatcherTests
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var journal = new Journal();
-        await using var provider = BuildProvider(
-            journal,
-            services =>
-            {
-                services.AddDomainEventHandler<FirstThingHandler, ThingHappened>();
-                services.AddDomainEventHandler<OtherThingHandler, OtherThingHappened>();
-            }
-        );
+        await using var provider = BuildProvider(journal, services =>
+        {
+            services.AddDomainEventHandler<FirstThingHandler, ThingHappened>();
+            services.AddDomainEventHandler<OtherThingHandler, OtherThingHappened>();
+        });
         var dispatcher = provider.GetRequiredService<IDomainEventDispatcher>();
 
         // Act
@@ -145,9 +138,8 @@ public sealed class DomainEventDispatcherTests
         // so the original exception has to surface, not a reflection wrapper.
         var cancellationToken = TestContext.Current.CancellationToken;
         var journal = new Journal();
-        await using var provider = BuildProvider(
-            journal,
-            services => services.AddDomainEventHandler<ThrowingThingHandler, ThingHappened>()
+        await using var provider = BuildProvider(journal, services =>
+            services.AddDomainEventHandler<ThrowingThingHandler, ThingHappened>()
         );
         var dispatcher = provider.GetRequiredService<IDomainEventDispatcher>();
 
